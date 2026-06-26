@@ -1,0 +1,1022 @@
+[gd_scene load_steps=4 format=3 uid="uid://battle_screen"]
+
+[ext_resource type="Script" path="res://scripts/ui/BattleScreen.gd" id="1_battle_screen"]
+[ext_resource type="Texture2D" path="res://assets/art/backgrounds/B01_battle_background.png" id="2_b01_background"]
+[ext_resource type="Texture2D" path="res://assets/manual_art_inbox/ui/G01_board_10x5_overlay.png" id="3_g01_board_overlay"]
+[ext_resource type="Script" path="res://scripts/ui/UIcon.gd" id="4_uicon"]
+[node name="BattleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_battle_screen")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.0156863, 0.027451, 0.0745098, 1)
+
+[node name="BattleBackgroundImage" type="TextureRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_b01_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundReadabilityWash" type="ColorRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.025, 0.055, 0.11, 0.58)
+
+[node name="TopBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = 14.0
+offset_top = 10.0
+offset_right = -14.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 10
+
+[node name="BackButton" type="Button" parent="TopBar"]
+custom_minimum_size = Vector2(96, 52)
+layout_mode = 2
+text = ""
+icon_alignment = 1
+
+[node name="BackIcon" type="Control" parent="TopBar/BackButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 4
+icon_color = Color(0.85, 0.9, 1, 0.9)
+
+[node name="BackText" type="Label" parent="TopBar/BackButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+text = "返回"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Title" type="Label" parent="TopBar"]
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 34
+text = "星图对弈"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+
+[node name="StatusPanel" type="PanelContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusMargin" type="MarginContainer" parent="TopBar/StatusPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 4
+
+[node name="StatusRow" type="VBoxContainer" parent="TopBar/StatusPanel/StatusMargin"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TopRow" type="HBoxContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TurnIcon" type="Control" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TopRow"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 9
+icon_color = Color(0.5, 0.85, 0.5, 0.9)
+
+[node name="TurnLabel" type="Label" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TopRow"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 25
+text = "第 1 回合 · 我方行动"
+horizontal_alignment = 0
+vertical_alignment = 1
+clip_text = true
+
+[node name="StarLabel" type="Label" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TopRow"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "星力"
+horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="TutorialRow" type="HBoxContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow"]
+custom_minimum_size = Vector2(0, 46)
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="TutorialTitle" type="Label" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "新手流程"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Step1Panel" type="PanelContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+
+[node name="Step1Inner" type="HBoxContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step1Panel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Step1Icon" type="Control" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step1Panel/Step1Inner"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 6
+icon_color = Color(0.5, 0.8, 0.5, 0.85)
+
+[node name="Step1Label" type="Label" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step1Panel/Step1Inner"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "选牌"
+
+[node name="Step2Panel" type="PanelContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+
+[node name="Step2Inner" type="HBoxContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step2Panel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Step2Icon" type="Control" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step2Panel/Step2Inner"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 7
+icon_color = Color(0.6, 0.7, 0.85, 0.85)
+
+[node name="Step2Label" type="Label" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step2Panel/Step2Inner"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "部署"
+
+[node name="Step3Panel" type="PanelContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow"]
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+
+[node name="Step3Inner" type="HBoxContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step3Panel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Step3Icon" type="Control" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step3Panel/Step3Inner"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 9
+icon_color = Color(0.45, 0.6, 0.85, 0.85)
+
+[node name="Step3Label" type="Label" parent="TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step3Panel/Step3Inner"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "推进"
+
+[node name="LogButton" type="Button" parent="TopBar"]
+custom_minimum_size = Vector2(96, 52)
+layout_mode = 2
+text = ""
+
+[node name="LogIcon" type="Control" parent="TopBar/LogButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 5
+icon_color = Color(0.7, 0.8, 1, 0.85)
+
+[node name="LogText" type="Label" parent="TopBar/LogButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 16
+text = "战报"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="DuelArea" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = 158.0
+offset_right = -14.0
+offset_bottom = -204.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="PlayerMasterPanel" type="PanelContainer" parent="DuelArea"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlayerMasterLayout" type="VBoxContainer" parent="DuelArea/PlayerMasterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PlayerPortrait" type="ColorRect" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.08, 0.22, 0.55, 0.4)
+
+[node name="PlayerPortraitLabel" type="Label" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerPortrait"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 24
+text = "青曜\n奕星师"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerNameRow" type="HBoxContainer" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PlayerCrown" type="Control" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerNameRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 0
+icon_color = Color(1, 0.78, 0.25, 0.9)
+
+[node name="PlayerTitleLabel" type="Label" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerNameRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "青曜执棋者"
+horizontal_alignment = 0
+vertical_alignment = 1
+clip_text = true
+
+[node name="PlayerHpContainer" type="HBoxContainer" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PlayerHeart" type="Control" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerHpContainer"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 12
+icon_color = Color(0.9, 0.2, 0.2, 0.85)
+
+[node name="PlayerHpLabel" type="Label" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerHpContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "HP 30/30"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="PlayerStarRow" type="HBoxContainer" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="PlayerStar" type="Control" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerStarRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 1
+icon_color = Color(1, 0.78, 0.2, 0.85)
+
+[node name="PlayerStarLabel" type="Label" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerStarRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "星力 0"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="PlayerDeployBadge" type="Label" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "部署区：蓝 1-3"
+horizontal_alignment = 0
+vertical_alignment = 1
+clip_text = true
+self_modulate = Color(1, 1, 1, 0.5)
+
+[node name="CenterBoardStack" type="VBoxContainer" parent="DuelArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 4
+
+[node name="ZoneBar" type="HBoxContainer" parent="DuelArea/CenterBoardStack"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="ZoneBlueLabel" type="Label" parent="DuelArea/CenterBoardStack/ZoneBar"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = " 蓝区 1-3 "
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+self_modulate = Color(0.3, 0.6, 1, 0.8)
+
+[node name="ZoneGrayLabel" type="Label" parent="DuelArea/CenterBoardStack/ZoneBar"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = " 星图区 4-7 "
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+self_modulate = Color(0.6, 0.55, 0.45, 0.8)
+
+[node name="ZoneRedLabel" type="Label" parent="DuelArea/CenterBoardStack/ZoneBar"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = " 红区 8-10 "
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+self_modulate = Color(1, 0.3, 0.5, 0.8)
+
+[node name="BattleArea" type="HBoxContainer" parent="DuelArea/CenterBoardStack"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="BoardPanel" type="PanelContainer" parent="DuelArea/CenterBoardStack/BattleArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BoardOverlayPreview" type="TextureRect" parent="DuelArea/CenterBoardStack/BattleArea/BoardPanel"]
+layout_mode = 2
+mouse_filter = 2
+self_modulate = Color(0.8, 0.92, 1, 0.3)
+texture = ExtResource("3_g01_board_overlay")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BoardGrid" type="GridContainer" parent="DuelArea/CenterBoardStack/BattleArea/BoardPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 4
+theme_override_constants/v_separation = 4
+columns = 10
+
+[node name="EnemyMasterPanel" type="PanelContainer" parent="DuelArea"]
+custom_minimum_size = Vector2(230, 0)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EnemyMasterLayout" type="VBoxContainer" parent="DuelArea/EnemyMasterPanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="EnemyPortrait" type="ColorRect" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
+custom_minimum_size = Vector2(0, 190)
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.5, 0.1, 0.15, 0.4)
+
+[node name="EnemyPortraitLabel" type="Label" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyPortrait"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 24
+text = "玄曜\n奕星师"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnemyNameRow" type="HBoxContainer" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="EnemyCrown" type="Control" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyNameRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 0
+icon_color = Color(0.8, 0.3, 0.3, 0.85)
+
+[node name="EnemyTitleLabel" type="Label" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyNameRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "玄曜控星者"
+horizontal_alignment = 0
+vertical_alignment = 1
+clip_text = true
+
+[node name="EnemyHpContainer" type="HBoxContainer" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="EnemyHeart" type="Control" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyHpContainer"]
+custom_minimum_size = Vector2(22, 22)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 12
+icon_color = Color(0.85, 0.15, 0.15, 0.85)
+
+[node name="EnemyHpLabel" type="Label" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyHpContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "HP 30/30"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="EnemyStarRow" type="HBoxContainer" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="EnemyStar" type="Control" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyStarRow"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 1
+icon_color = Color(0.9, 0.3, 0.25, 0.85)
+
+[node name="EnemyStarLabel" type="Label" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyStarRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "星力 0"
+horizontal_alignment = 0
+vertical_alignment = 1
+
+[node name="EnemyDeployBadge" type="Label" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+text = "部署区：红 8-10"
+horizontal_alignment = 0
+vertical_alignment = 1
+clip_text = true
+self_modulate = Color(1, 1, 1, 0.5)
+
+[node name="BottomHand" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_top = -194.0
+offset_right = -14.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 12
+
+[node name="CardZonePanel" type="PanelContainer" parent="BottomHand"]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+
+[node name="CardZoneLayout" type="VBoxContainer" parent="BottomHand/CardZonePanel"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CardZoneHeader" type="HBoxContainer" parent="BottomHand/CardZonePanel/CardZoneLayout"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CardZoneToggleButton" type="Button" parent="BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader"]
+custom_minimum_size = Vector2(140, 44)
+layout_mode = 2
+text = ""
+
+[node name="CardToggleIcon" type="Control" parent="BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader/CardZoneToggleButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 6
+icon_color = Color(0.65, 0.8, 1, 0.85)
+
+[node name="CardZoneToggleText" type="Label" parent="BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader/CardZoneToggleButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+text = "手牌区"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CardZoneSummaryLabel" type="Label" parent="BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "手牌 0 · 弃牌 0"
+vertical_alignment = 1
+clip_text = true
+
+[node name="CardZoneLabel" type="Label" parent="BottomHand/CardZonePanel"]
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = ""
+autowrap_mode = 2
+
+[node name="Controls" type="HBoxContainer" parent="BottomHand"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="HeroScroll" type="ScrollContainer" parent="BottomHand/Controls"]
+custom_minimum_size = Vector2(760, 128)
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 2
+vertical_scroll_mode = 0
+
+[node name="HeroButtons" type="HBoxContainer" parent="BottomHand/Controls/HeroScroll"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="GuanyuButton" type="Button" parent="BottomHand/Controls/HeroScroll/HeroButtons"]
+custom_minimum_size = Vector2(220, 72)
+layout_mode = 2
+text = "关羽 (5)"
+
+[node name="ZhouyuButton" type="Button" parent="BottomHand/Controls/HeroScroll/HeroButtons"]
+custom_minimum_size = Vector2(220, 72)
+layout_mode = 2
+text = "周瑜 (5)"
+
+[node name="ZhangjiaoButton" type="Button" parent="BottomHand/Controls/HeroScroll/HeroButtons"]
+custom_minimum_size = Vector2(220, 72)
+layout_mode = 2
+text = "张角 (5)"
+
+[node name="AdvanceButton" type="Button" parent="BottomHand/Controls"]
+custom_minimum_size = Vector2(230, 112)
+
+[node name="AdvanceIcon" type="Control" parent="BottomHand/Controls/AdvanceButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+anchor_top = 0.0
+offset_top = 8.0
+offset_bottom = 0.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 9
+icon_color = Color(0.4, 0.85, 0.5, 0.9)
+
+[node name="AdvanceText" type="Label" parent="BottomHand/Controls/AdvanceButton"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 40.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 22
+text = "推进回合"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ResetButton" type="Button" parent="BottomHand/Controls"]
+custom_minimum_size = Vector2(128, 112)
+
+[node name="ResetIcon" type="Control" parent="BottomHand/Controls/ResetButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+anchor_top = 0.0
+offset_top = 8.0
+offset_bottom = 0.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 10
+icon_color = Color(0.9, 0.6, 0.25, 0.85)
+
+[node name="ResetText" type="Label" parent="BottomHand/Controls/ResetButton"]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 40.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 22
+text = "重置"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OverlayDismissButton" type="Button" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+flat = true
+text = ""
+
+[node name="CardZoneDrawerPanel" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = -390.0
+offset_right = 960.0
+offset_bottom = 390.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="DrawerMargin" type="MarginContainer" parent="CardZoneDrawerPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="DrawerLayout" type="VBoxContainer" parent="CardZoneDrawerPanel/DrawerMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DrawerHeader" type="HBoxContainer" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DrawerTitle" type="Label" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout/DrawerHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "牌区"
+vertical_alignment = 1
+
+[node name="CardZoneCloseButton" type="Button" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout/DrawerHeader"]
+custom_minimum_size = Vector2(96, 44)
+layout_mode = 2
+text = ""
+
+[node name="CloseIcon" type="Control" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout/DrawerHeader/CardZoneCloseButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 11
+icon_color = Color(0.85, 0.85, 0.85, 0.85)
+
+[node name="CardZoneDetailLabel" type="RichTextLabel" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 18
+bbcode_enabled = true
+text = ""
+scroll_active = false
+
+[node name="CardZoneScroll" type="ScrollContainer" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout"]
+custom_minimum_size = Vector2(0, 118)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="CardZoneCards" type="VBoxContainer" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout/CardZoneScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="CardInspectLabel" type="RichTextLabel" parent="CardZoneDrawerPanel/DrawerMargin/DrawerLayout"]
+custom_minimum_size = Vector2(0, 58)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 18
+bbcode_enabled = true
+text = ""
+scroll_active = false
+
+[node name="LogPanel" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -620.0
+offset_top = 150.0
+offset_right = -18.0
+offset_bottom = -18.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="LogMargin" type="MarginContainer" parent="LogPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 12
+
+[node name="LogLayout" type="VBoxContainer" parent="LogPanel/LogMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="LogHeader" type="HBoxContainer" parent="LogPanel/LogMargin/LogLayout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LogTitle" type="Label" parent="LogPanel/LogMargin/LogLayout/LogHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "战报"
+vertical_alignment = 1
+
+[node name="LogCloseButton" type="Button" parent="LogPanel/LogMargin/LogLayout/LogHeader"]
+custom_minimum_size = Vector2(96, 44)
+layout_mode = 2
+text = ""
+
+[node name="LogCloseIcon" type="Control" parent="LogPanel/LogMargin/LogLayout/LogHeader/LogCloseButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 11
+icon_color = Color(0.85, 0.85, 0.85, 0.85)
+
+[node name="LogText" type="TextEdit" parent="LogPanel/LogMargin/LogLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 24
+text = ""
+editable = false
+wrap_mode = 1
+scroll_fit_content_height = false
+
+[node name="DeployFailureToastPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(760, 70)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.0
+anchor_right = 0.5
+anchor_bottom = 0.0
+offset_left = -380.0
+offset_top = 160.0
+offset_right = 380.0
+offset_bottom = 230.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="ToastMargin" type="MarginContainer" parent="DeployFailureToastPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
+
+[node name="DeployFailureToastLabel" type="Label" parent="DeployFailureToastPanel/ToastMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "金边格就是当前可部署位置"
+horizontal_alignment = 1
+vertical_alignment = 1
+clip_text = true
+
+[node name="UnitDetailPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(520, 500)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_left = -680.0
+offset_top = 150.0
+offset_right = -18.0
+offset_bottom = 650.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="DetailMargin" type="MarginContainer" parent="UnitDetailPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="DetailLayout" type="VBoxContainer" parent="UnitDetailPanel/DetailMargin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DetailHeader" type="HBoxContainer" parent="UnitDetailPanel/DetailMargin/DetailLayout"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="DetailTitle" type="Label" parent="UnitDetailPanel/DetailMargin/DetailLayout/DetailHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "单位详情"
+clip_text = true
+
+[node name="DetailCloseButton" type="Button" parent="UnitDetailPanel/DetailMargin/DetailLayout/DetailHeader"]
+custom_minimum_size = Vector2(96, 44)
+layout_mode = 2
+text = ""
+
+[node name="DetailCloseIcon" type="Control" parent="UnitDetailPanel/DetailMargin/DetailLayout/DetailHeader/DetailCloseButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("4_uicon")
+icon = 11
+icon_color = Color(0.85, 0.85, 0.85, 0.85)
+
+[node name="DetailScroll" type="ScrollContainer" parent="UnitDetailPanel/DetailMargin/DetailLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="DetailBody" type="RichTextLabel" parent="UnitDetailPanel/DetailMargin/DetailLayout/DetailScroll"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 26
+bbcode_enabled = true
+text = ""
+fit_content = true
+scroll_active = false
+
+[node name="FirstDeployHintPanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(560, 200)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -340.0
+offset_right = 280.0
+offset_bottom = -140.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="HintMargin" type="MarginContainer" parent="FirstDeployHintPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="HintLayout" type="VBoxContainer" parent="FirstDeployHintPanel/HintMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HintTitle" type="Label" parent="FirstDeployHintPanel/HintMargin/HintLayout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "首次部署提示"
+clip_text = true
+
+[node name="HintIconRow" type="HBoxContainer" parent="FirstDeployHintPanel/HintMargin/HintLayout"]
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 24
+
+[node name="HintStep1" type="VBoxContainer" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="HintStep1Icon" type="Control" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow/HintStep1"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 6
+icon_color = Color(0.5, 0.8, 0.5, 0.85)
+
+[node name="HintStep1Text" type="Label" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow/HintStep1"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "点击手牌"
+horizontal_alignment = 1
+
+[node name="HintStep2" type="VBoxContainer" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="HintStep2Icon" type="Control" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow/HintStep2"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 7
+icon_color = Color(0.6, 0.7, 0.85, 0.85)
+
+[node name="HintStep2Text" type="Label" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow/HintStep2"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "选择蓝区"
+horizontal_alignment = 1
+
+[node name="HintStep3" type="VBoxContainer" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="HintStep3Icon" type="Control" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow/HintStep3"]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+script = ExtResource("4_uicon")
+icon = 9
+icon_color = Color(0.5, 0.65, 0.85, 0.85)
+
+[node name="HintStep3Text" type="Label" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow/HintStep3"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "推进回合"
+horizontal_alignment = 1
+
+[node name="HintFooter" type="HBoxContainer" parent="FirstDeployHintPanel/HintMargin/HintLayout"]
+layout_mode = 2
+alignment = 2
+
+[node name="FirstDeployHintButton" type="Button" parent="FirstDeployHintPanel/HintMargin/HintLayout/HintFooter"]
+custom_minimum_size = Vector2(128, 44)
+layout_mode = 2
+text = "知道了"

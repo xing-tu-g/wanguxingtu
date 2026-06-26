@@ -1,0 +1,37 @@
+# Godot
+.godot/
+.import/
+export.cfg
+
+# Godot generated imports
+*.import
+
+# Build outputs
+builds/
+_downloads/
+*.apk
+*.aab
+
+# Logs and temporary files
+*.log
+*.tmp
+.tmp_*
+.codex_*_result.txt
+.codex_smoke_last_message.txt
+project.godot*.tmp
+
+# Local agent/tool state
+.workbuddy/
+.godot-mcp/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local runtime/downloads
+godot-editor/
+
+# Word temporary files
+~$*.docx

@@ -1,0 +1,4 @@
+[gd_scene format=3 uid="uid://unit_detail_popup_scene"]
+
+[node name="UnitDetailPopup" type="PopupPanel"]
+title = "单位详情"

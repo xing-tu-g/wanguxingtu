@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+[ext_resource type="Shader" path="res://assets/shaders/depth_fade.gdshader" id="1"]
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/blur_amount = 2.0
+shader_parameter/vignette_strength = 0.45
+shader_parameter/tint_color = Color(0.04, 0.06, 0.16, 0.35)

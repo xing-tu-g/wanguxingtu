@@ -1,0 +1,275 @@
+[
+  {
+    "id": "guanyu_growth",
+    "name": "武圣成长",
+    "trigger": "turn_start",
+    "effect_type": "modify_stat",
+    "target": "self",
+    "params": {
+      "attack": 1,
+      "max_hp": 3,
+      "heal": 3
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "回合开始时：自身攻击 +1、生命上限 +3，并回复 3 点生命，回复不超过生命上限。"
+  },
+  {
+    "id": "zhouyu_burn",
+    "name": "赤壁灼烧",
+    "trigger": "attack_hit",
+    "effect_type": "apply_status",
+    "target": "attack_target",
+    "params": {
+      "status_id": "burn",
+      "value": 3
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "攻击命中后：目标获得 1 回合燃烧。燃烧会在回合结束时造成 3 点真实伤害。"
+  },
+  {
+    "id": "zhangjiao_summon",
+    "name": "黄天召令",
+    "trigger": "deploy",
+    "effect_type": "summon",
+    "target": "adjacent_empty_cells",
+    "params": {
+      "unit_id": "yellow_turban",
+      "count": 3
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "部署时：在相邻空格最多召唤 3 个黄巾兵。"
+  },
+  {
+    "id": "zhaoyun_dash",
+    "name": "龙胆突进",
+    "trigger": "passive",
+    "effect_type": "movement_trait",
+    "target": "self",
+    "params": {
+      "can_pass_blockers": true
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "移动时：可以穿过前方阻挡单位，但不能停在已占用格。"
+  },
+  {
+    "id": "zhangfei_guard",
+    "name": "燕人守护",
+    "trigger": "passive",
+    "effect_type": "adjacent_guard",
+    "target": "adjacent_allies",
+    "params": {
+      "damage_reduction": 2
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "相邻友军受到非真实伤害时：本次伤害减少 2 点，最低为 0。"
+  },
+  {
+    "id": "sunshangxiang_combo",
+    "name": "枭姬连弩",
+    "trigger": "attack_hit",
+    "effect_type": "bonus_damage",
+    "target": "attack_target",
+    "params": {
+      "damage": 2,
+      "damage_type": "physical"
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "攻击命中后：对同一目标追加 2 点物理伤害。"
+  },
+  {
+    "id": "zhugeliang_growth",
+    "name": "Zhuge Liang Formation",
+    "trigger": "deploy",
+    "effect_type": "modify_stat",
+    "target": "self",
+    "params": {
+      "max_hp": 2,
+      "heal": 2
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "Prototype: gains +2 max HP and heals 2 on deployment."
+  },
+  {
+    "id": "caocao_march",
+    "name": "Cao Cao March",
+    "trigger": "turn_start",
+    "effect_type": "side_move",
+    "target": "self_side",
+    "params": {
+      "move_delta": 1
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "Prototype: allied units gain +1 movement this turn."
+  },
+  {
+    "id": "simayi_silence",
+    "name": "Sima Yi Silence",
+    "trigger": "deploy",
+    "effect_type": "enemy_attack_delta",
+    "target": "enemy_side",
+    "params": {
+      "attack_delta": -1
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "Prototype: enemy units get -1 attack until their side effect is cleared."
+  },
+  {
+    "id": "zhangliao_assault",
+    "name": "Zhang Liao Assault",
+    "trigger": "attack_hit",
+    "effect_type": "bonus_damage",
+    "target": "attack_target",
+    "params": {
+      "damage": 1,
+      "damage_type": "physical"
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "Prototype: adds 1 physical damage after a hit."
+  },
+  {
+    "id": "luxun_burn_link",
+    "name": "Lu Xun Burn Link",
+    "trigger": "attack_hit",
+    "effect_type": "apply_status",
+    "target": "attack_target",
+    "params": {
+      "status_id": "burn",
+      "value": 2
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "Prototype: applies burn for 2 true damage at turn end."
+  },
+  {
+    "id": "lvbu_rage",
+    "name": "Lu Bu Rage",
+    "trigger": "attack_hit",
+    "effect_type": "bonus_damage",
+    "target": "attack_target",
+    "params": {
+      "damage": 2,
+      "damage_type": "physical"
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "Prototype: adds 2 physical damage after a hit."
+  },
+  {
+    "id": "huangzhong_snipe",
+    "name": "烈弓",
+    "trigger": "attack_hit",
+    "effect_type": "bonus_damage",
+    "target": "attack_target",
+    "params": {
+      "damage": 2,
+      "damage_type": "true"
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "攻击命中后：对目标追加 2 点真实伤害。"
+  },
+  {
+    "id": "guojia_strategy",
+    "name": "遗计",
+    "trigger": "deploy",
+    "effect_type": "enemy_attack_delta",
+    "target": "enemy_side",
+    "params": {
+      "attack_delta": -2
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "部署时：敌方全军攻击力 -2，持续 1 回合。"
+  },
+  {
+    "id": "dianwei_rage",
+    "name": "恶来",
+    "trigger": "turn_start",
+    "effect_type": "modify_stat",
+    "target": "self",
+    "params": {
+      "attack": 1,
+      "heal": 1
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "回合开始时：自身攻击 +1，并回复 1 点生命。"
+  },
+  {
+    "id": "xunyu_aid",
+    "name": "王佐",
+    "trigger": "turn_start",
+    "effect_type": "adjacent_modify",
+    "target": "adjacent_allies",
+    "params": {
+      "heal": 2
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "回合开始时：为相邻友军回复 2 点生命。"
+  },
+  {
+    "id": "dongzhuo_feast",
+    "name": "酒池",
+    "trigger": "turn_start",
+    "effect_type": "modify_stat",
+    "target": "self",
+    "params": {
+      "heal": 3
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "回合开始时：自身回复 3 点生命，不超过生命上限。"
+  },
+  {
+    "id": "diaochan_charm",
+    "name": "离间",
+    "trigger": "deploy",
+    "effect_type": "enemy_attack_delta",
+    "target": "enemy_side",
+    "params": {
+      "attack_delta": -1
+    },
+    "duration_turns": 1,
+    "stacking": "unique",
+    "description": "部署时：敌方全军攻击力 -1，持续 1 回合。"
+  },
+  {
+    "id": "gongsunzan_cavalry",
+    "name": "白马",
+    "trigger": "attack_hit",
+    "effect_type": "bonus_damage",
+    "target": "attack_target",
+    "params": {
+      "damage": 1,
+      "damage_type": "physical"
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "攻击命中后：对目标追加 1 点物理伤害。"
+  },
+  {
+    "id": "huaxiong_execute",
+    "name": "斩将",
+    "trigger": "attack_hit",
+    "effect_type": "bonus_damage",
+    "target": "attack_target",
+    "params": {
+      "damage": 2,
+      "damage_type": "physical"
+    },
+    "duration_turns": 0,
+    "stacking": "unique",
+    "description": "攻击命中后：对目标追加 2 点物理伤害。"
+  }
+]

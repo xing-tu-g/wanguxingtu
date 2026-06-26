@@ -1,0 +1,40 @@
+[
+  {
+    "id": "grass",
+    "name": "Grass",
+    "walkable": true,
+    "deployable_in_own_zone": true,
+    "effects": {}
+  },
+  {
+    "id": "swamp",
+    "name": "Swamp",
+    "walkable": true,
+    "deployable_in_own_zone": true,
+    "effects": {
+      "movement_cost_delta": 1,
+      "ignore_classes": ["assassin", "warrior"]
+    }
+  },
+  {
+    "id": "river",
+    "name": "River",
+    "walkable": true,
+    "deployable_in_own_zone": true,
+    "effects": {
+      "attack_delta": -1,
+      "damage_taken_delta": 1,
+      "master_damage_delta": -1
+    }
+  },
+  {
+    "id": "highland",
+    "name": "Highland",
+    "walkable": true,
+    "deployable_in_own_zone": true,
+    "effects": {
+      "range_delta": 1,
+      "affected_classes": ["archer", "mage"]
+    }
+  }
+]

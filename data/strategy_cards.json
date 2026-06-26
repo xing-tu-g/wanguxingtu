@@ -1,0 +1,74 @@
+[
+  {
+    "id": "fire_arrow",
+    "name": "火矢",
+    "timing": "strategy_phase",
+    "effect_type": "side_class_attack_delta",
+    "target": "self_archers",
+    "params": {
+      "class": "archer",
+      "attack_delta": 2,
+      "duration_turns": 1
+    },
+    "description": "所有己方射手本回合攻击力 +2。"
+  },
+  {
+    "id": "inspire",
+    "name": "鼓舞",
+    "timing": "strategy_phase",
+    "effect_type": "side_attack_delta",
+    "target": "self_units",
+    "params": {
+      "attack_delta": 2,
+      "duration_turns": 1
+    },
+    "description": "所有己方武将本回合攻击力 +2。"
+  },
+  {
+    "id": "rockfall",
+    "name": "落石",
+    "timing": "strategy_phase",
+    "effect_type": "enemy_half_random_cell_damage",
+    "target": "enemy_half_cells",
+    "params": {
+      "cell_count": 3,
+      "damage": 5,
+      "damage_type": "true"
+    },
+    "description": "敌方半场随机 3 格各造成 5 点真实伤害。"
+  },
+  {
+    "id": "supply",
+    "name": "补给",
+    "timing": "strategy_phase",
+    "effect_type": "heal_master",
+    "target": "self_master",
+    "params": {
+      "heal": 10
+    },
+    "description": "己方奕星师回复 10 点 HP，不超过最大 HP。"
+  },
+  {
+    "id": "march",
+    "name": "急行军",
+    "timing": "strategy_phase",
+    "effect_type": "side_move_delta",
+    "target": "self_units",
+    "params": {
+      "move_delta": 1,
+      "duration_turns": 1
+    },
+    "description": "己方全军本回合移动力 +1。"
+  },
+  {
+    "id": "earthquake",
+    "name": "地震",
+    "timing": "strategy_phase",
+    "effect_type": "both_master_damage",
+    "target": "both_masters",
+    "params": {
+      "damage": 10
+    },
+    "description": "双方奕星师各受到 10 点伤害。"
+  }
+]

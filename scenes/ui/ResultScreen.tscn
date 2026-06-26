@@ -1,0 +1,43 @@
+[gd_scene load_steps=2 format=3 uid="uid://result_screen"]
+
+[ext_resource type="Script" path="res://scripts/ui/ResultScreen.gd" id="1_result_screen"]
+
+[node name="ResultScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_result_screen")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 32.0
+offset_top = 24.0
+offset_right = -32.0
+offset_bottom = -32.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Layout" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+alignment = 1
+
+[node name="Title" type="Label" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+
+[node name="Body" type="Label" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+horizontal_alignment = 1
+
+[node name="HomeButton" type="Button" parent="Margin/Layout"]
+custom_minimum_size = Vector2(220, 56)
+layout_mode = 2
+text = "返回首页"
