@@ -1,11 +1,11 @@
-param(
-	[string]$ApkPath = "builds/wanguxingtu-m70-b01-004535-debug.apk",
+﻿param(
+	[string]$ApkPath = "builds/wanguxingtu-battle-polish-v3-debug.apk",
 	[string]$PackageName = "com.wanguxingtu.mvp",
 	[string]$Serial = "",
 	[string]$ScreenshotPath = (Join-Path $env:TEMP "wanguxingtu-smoke.png"),
 	[string]$AdbBin = "adb",
 	[int]$LaunchWaitSeconds = 5,
-	[string]$WaitForLogPattern = "万古星图首页 ready",
+	[string]$WaitForLogPattern = "ScreenRouter ready|页面已加载",
 	[int]$WaitTimeoutSeconds = 45,
 	[int]$MinScreenshotBytes = 50000,
 	[int]$LogcatLines = 2600

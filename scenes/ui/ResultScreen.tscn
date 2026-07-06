@@ -1,6 +1,49 @@
-[gd_scene load_steps=2 format=3 uid="uid://result_screen"]
+[gd_scene load_steps=6 format=3 uid="uid://result_screen"]
 
 [ext_resource type="Script" path="res://scripts/ui/ResultScreen.gd" id="1_result_screen"]
+[ext_resource type="Texture2D" path="res://assets/ui/battle/background/battle_background.png" id="2_battle_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_result_panel"]
+bg_color = Color(0.025, 0.031, 0.07, 0.84)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.86, 0.66, 0.28, 0.82)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.45)
+shadow_size = 18
+content_margin_left = 44.0
+content_margin_top = 34.0
+content_margin_right = 44.0
+content_margin_bottom = 34.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+bg_color = Color(0.035, 0.15, 0.29, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.65, 0.27, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_pressed"]
+bg_color = Color(0.07, 0.28, 0.46, 0.98)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.78, 0.35, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
 
 [node name="ResultScreen" type="Control"]
 layout_mode = 3
@@ -10,6 +53,26 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_result_screen")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_battle_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundDim" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.006, 0.008, 0.02, 0.56)
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -26,18 +89,123 @@ grow_vertical = 2
 [node name="Layout" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
 alignment = 1
+theme_override_constants/separation = 18
 
 [node name="Title" type="Label" parent="Margin/Layout"]
 layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.52, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.75)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
 theme_override_font_sizes/font_size = 36
 horizontal_alignment = 1
 
+[node name="Subtitle" type="Label" parent="Margin/Layout"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.74, 0.86, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.7)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 22
+horizontal_alignment = 1
+
+[node name="ResultPanel" type="PanelContainer" parent="Margin/Layout"]
+custom_minimum_size = Vector2(980, 360)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_styles/panel = SubResource("StyleBoxFlat_result_panel")
+
+[node name="ResultGrid" type="GridContainer" parent="Margin/Layout/ResultPanel"]
+layout_mode = 2
+theme_override_constants/h_separation = 42
+theme_override_constants/v_separation = 18
+columns = 2
+
+[node name="RoundLabel" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 22
+text = "战斗回合"
+
+[node name="RoundValue" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.62, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 2
+
+[node name="KillLabel" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 22
+text = "击杀统计"
+
+[node name="KillValue" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.62, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 2
+
+[node name="DamageLabel" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 22
+text = "伤害统计"
+
+[node name="DamageValue" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.62, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 2
+
+[node name="MvpLabel" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 22
+text = "本场 MVP"
+
+[node name="MvpValue" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.62, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 2
+
+[node name="RewardLabel" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.76, 0.82, 0.92, 1)
+theme_override_font_sizes/font_size = 22
+text = "奖励"
+
+[node name="RewardValue" type="Label" parent="Margin/Layout/ResultPanel/ResultGrid"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.62, 1)
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 2
+
 [node name="Body" type="Label" parent="Margin/Layout"]
+visible = false
 layout_mode = 2
 theme_override_font_sizes/font_size = 22
 horizontal_alignment = 1
 
-[node name="HomeButton" type="Button" parent="Margin/Layout"]
+[node name="ButtonRow" type="HBoxContainer" parent="Margin/Layout"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 18
+
+[node name="HomeButton" type="Button" parent="Margin/Layout/ButtonRow"]
 custom_minimum_size = Vector2(220, 56)
 layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
 text = "返回首页"
+
+[node name="RetryButton" type="Button" parent="Margin/Layout/ButtonRow"]
+custom_minimum_size = Vector2(220, 56)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.97, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_button")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_pressed")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_pressed")
+text = "再战一局"

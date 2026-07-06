@@ -11,6 +11,7 @@ var entries: Array[String] = []
 var collapsed := true
 var max_lines := DEFAULT_MAX_LINES
 var max_result_chars := DEFAULT_MAX_RESULT_CHARS
+var display_enabled := true
 var log_panel: PanelContainer
 var log_text: TextEdit
 var toggle_button: Button
@@ -40,12 +41,19 @@ func add(turn_number: int, actor: String, action: String, result: String) -> voi
 
 
 func refresh() -> void:
+	if not display_enabled:
+		if log_text != null:
+			log_text.text = ""
+		return
 	if log_text != null:
 		log_text.text = "\n".join(entries)
 		log_text.scroll_vertical = max(0, log_text.get_line_count() - 1)
 
 
 func toggle() -> void:
+	if not display_enabled:
+		close()
+		return
 	collapsed = not collapsed
 	update_visibility()
 	visibility_changed.emit(collapsed)
@@ -58,6 +66,13 @@ func close() -> void:
 
 
 func update_visibility() -> void:
+	if not display_enabled:
+		if log_panel != null:
+			log_panel.visible = false
+		if toggle_button != null:
+			toggle_button.visible = false
+			toggle_button.disabled = true
+		return
 	if log_panel != null:
 		log_panel.visible = not collapsed
 	if toggle_button != null:

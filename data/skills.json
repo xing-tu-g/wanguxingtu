@@ -1,275 +1,1321 @@
 [
-  {
-    "id": "guanyu_growth",
-    "name": "武圣成长",
-    "trigger": "turn_start",
-    "effect_type": "modify_stat",
-    "target": "self",
-    "params": {
-      "attack": 1,
-      "max_hp": 3,
-      "heal": 3
+    {
+        "id":  "guanyu_growth",
+        "name":  "武圣成长",
+        "trigger":  "turn_start",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "params":  {
+                       "attack":  1,
+                       "max_hp":  3,
+                       "heal":  3
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "回合开始时：自身攻击 +1、生命上限 +3，并回复 3 点生命，回复不超过生命上限。",
+        "owner_hero_id":  "guanyu",
+        "skill_type":  "growth",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "warrior",
+                     "growth"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "回合开始时：自身攻击 +1、生命上限 +3，并回复 3 点生命，回复不超过生命上限。"
-  },
-  {
-    "id": "zhouyu_burn",
-    "name": "赤壁灼烧",
-    "trigger": "attack_hit",
-    "effect_type": "apply_status",
-    "target": "attack_target",
-    "params": {
-      "status_id": "burn",
-      "value": 3
+    {
+        "id":  "zhouyu_burn",
+        "name":  "赤壁灼烧",
+        "trigger":  "attack_hit",
+        "effect_type":  "apply_status",
+        "target":  "attack_target",
+        "params":  {
+                       "status_id":  "burn",
+                       "value":  3
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "攻击命中后：目标获得 1 回合燃烧。燃烧会在回合结束时造成 3 点真实伤害。",
+        "owner_hero_id":  "zhouyu",
+        "skill_type":  "debuff",
+        "attack_shape":  "same_row_plus_adjacent_forward",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "burn"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "攻击命中后：目标获得 1 回合燃烧。燃烧会在回合结束时造成 3 点真实伤害。"
-  },
-  {
-    "id": "zhangjiao_summon",
-    "name": "黄天召令",
-    "trigger": "deploy",
-    "effect_type": "summon",
-    "target": "adjacent_empty_cells",
-    "params": {
-      "unit_id": "yellow_turban",
-      "count": 3
+    {
+        "id":  "zhangjiao_summon",
+        "name":  "黄天召令",
+        "trigger":  "deploy",
+        "effect_type":  "summon",
+        "target":  "adjacent_empty_cells",
+        "params":  {
+                       "unit_id":  "yellow_turban",
+                       "count":  3
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "部署时：在相邻空格最多召唤 3 个黄巾兵。",
+        "owner_hero_id":  "zhangjiao",
+        "skill_type":  "summon",
+        "attack_shape":  "self",
+        "target_filter":  "adjacent_empty_cells",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "summon"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "部署时：在相邻空格最多召唤 3 个黄巾兵。"
-  },
-  {
-    "id": "zhaoyun_dash",
-    "name": "龙胆突进",
-    "trigger": "passive",
-    "effect_type": "movement_trait",
-    "target": "self",
-    "params": {
-      "can_pass_blockers": true
+    {
+        "id":  "zhaoyun_dash",
+        "name":  "龙胆突进",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "params":  {
+                       "damage":  1,
+                       "damage_type":  "physical"
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "普通攻击命中后：追加 1 点物理伤害。",
+        "owner_hero_id":  "zhaoyun",
+        "skill_type":  "burst",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "warrior",
+                     "bonus_damage"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "移动时：可以穿过前方阻挡单位，但不能停在已占用格。"
-  },
-  {
-    "id": "zhangfei_guard",
-    "name": "燕人守护",
-    "trigger": "passive",
-    "effect_type": "adjacent_guard",
-    "target": "adjacent_allies",
-    "params": {
-      "damage_reduction": 2
+    {
+        "id":  "zhangfei_guard",
+        "name":  "燕人守护",
+        "trigger":  "passive",
+        "effect_type":  "adjacent_guard",
+        "target":  "adjacent_allies",
+        "params":  {
+                       "damage_reduction":  2
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "相邻友军受到非真实伤害时：本次伤害减少 2 点，最低为 0。",
+        "owner_hero_id":  "zhangfei",
+        "skill_type":  "guard",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "adjacent_allies",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "tank",
+                     "guard"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "相邻友军受到非真实伤害时：本次伤害减少 2 点，最低为 0。"
-  },
-  {
-    "id": "sunshangxiang_combo",
-    "name": "枭姬连弩",
-    "trigger": "attack_hit",
-    "effect_type": "bonus_damage",
-    "target": "attack_target",
-    "params": {
-      "damage": 2,
-      "damage_type": "physical"
+    {
+        "id":  "sunshangxiang_combo",
+        "name":  "枭姬连弩",
+        "trigger":  "attack_hit",
+        "effect_type":  "apply_status",
+        "target":  "attack_target",
+        "params":  {
+                       "status_id":  "burn",
+                       "value":  1
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "攻击命中后：目标回合结束时受到 1 点真实伤害。",
+        "owner_hero_id":  "sunshangxiang",
+        "skill_type":  "sustain_damage",
+        "attack_shape":  "same_row_plus_adjacent_forward",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "archer",
+                     "sustain",
+                     "pierce"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "攻击命中后：对同一目标追加 2 点物理伤害。"
-  },
-  {
-    "id": "zhugeliang_growth",
-    "name": "Zhuge Liang Formation",
-    "trigger": "deploy",
-    "effect_type": "modify_stat",
-    "target": "self",
-    "params": {
-      "max_hp": 2,
-      "heal": 2
+    {
+        "id":  "zhugeliang_growth",
+        "name":  "八阵守心",
+        "trigger":  "deploy",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "params":  {
+                       "max_hp":  2,
+                       "heal":  2
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "部署时：自身生命上限 +2，并回复 2 点生命。",
+        "owner_hero_id":  "zhugeliang",
+        "skill_type":  "support",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "self_buff"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "Prototype: gains +2 max HP and heals 2 on deployment."
-  },
-  {
-    "id": "caocao_march",
-    "name": "Cao Cao March",
-    "trigger": "turn_start",
-    "effect_type": "side_move",
-    "target": "self_side",
-    "params": {
-      "move_delta": 1
+    {
+        "id":  "caocao_march",
+        "name":  "魏武令",
+        "trigger":  "turn_start",
+        "effect_type":  "side_move",
+        "target":  "self_side",
+        "params":  {
+                       "move_delta":  1
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "回合开始时：我方全军移动 +1，持续 1 回合。",
+        "owner_hero_id":  "caocao",
+        "skill_type":  "buff",
+        "attack_shape":  "all_allies",
+        "target_filter":  "self_side",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "side_buff"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "Prototype: allied units gain +1 movement this turn."
-  },
-  {
-    "id": "simayi_silence",
-    "name": "Sima Yi Silence",
-    "trigger": "deploy",
-    "effect_type": "enemy_attack_delta",
-    "target": "enemy_side",
-    "params": {
-      "attack_delta": -1
+    {
+        "id":  "simayi_silence",
+        "name":  "鹰视压制",
+        "trigger":  "deploy",
+        "effect_type":  "enemy_attack_delta",
+        "target":  "enemy_side",
+        "params":  {
+                       "attack_delta":  -1
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "部署时：敌方全军攻击 -1，持续 1 回合。",
+        "owner_hero_id":  "simayi",
+        "skill_type":  "debuff",
+        "attack_shape":  "all_enemies",
+        "target_filter":  "enemy_side",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "debuff"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "Prototype: enemy units get -1 attack until their side effect is cleared."
-  },
-  {
-    "id": "zhangliao_assault",
-    "name": "Zhang Liao Assault",
-    "trigger": "attack_hit",
-    "effect_type": "bonus_damage",
-    "target": "attack_target",
-    "params": {
-      "damage": 1,
-      "damage_type": "physical"
+    {
+        "id":  "zhangliao_assault",
+        "name":  "合肥突击",
+        "trigger":  "deploy",
+        "effect_type":  "side_move",
+        "target":  "self_side",
+        "params":  {
+                       "move_delta":  1
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "部署时：我方全军移动 +1，持续 1 回合。",
+        "owner_hero_id":  "zhangliao",
+        "skill_type":  "side_buff",
+        "attack_shape":  "all_allies",
+        "target_filter":  "self_side",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "warrior",
+                     "side_buff",
+                     "mobility"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "Prototype: adds 1 physical damage after a hit."
-  },
-  {
-    "id": "luxun_burn_link",
-    "name": "Lu Xun Burn Link",
-    "trigger": "attack_hit",
-    "effect_type": "apply_status",
-    "target": "attack_target",
-    "params": {
-      "status_id": "burn",
-      "value": 2
+    {
+        "id":  "luxun_burn_link",
+        "name":  "连营火计",
+        "trigger":  "attack_hit",
+        "effect_type":  "apply_status",
+        "target":  "attack_target",
+        "params":  {
+                       "status_id":  "burn",
+                       "value":  2
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "攻击命中后：目标获得 1 回合燃烧。",
+        "owner_hero_id":  "luxun",
+        "skill_type":  "debuff",
+        "attack_shape":  "same_row_plus_adjacent_forward",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "burn"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "Prototype: applies burn for 2 true damage at turn end."
-  },
-  {
-    "id": "lvbu_rage",
-    "name": "Lu Bu Rage",
-    "trigger": "attack_hit",
-    "effect_type": "bonus_damage",
-    "target": "attack_target",
-    "params": {
-      "damage": 2,
-      "damage_type": "physical"
+    {
+        "id":  "lvbu_rage",
+        "name":  "无双怒击",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "params":  {
+                       "damage":  3,
+                       "damage_type":  "physical"
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "攻击命中后：追加 3 点物理伤害。",
+        "owner_hero_id":  "lvbu",
+        "skill_type":  "burst",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "warrior",
+                     "bonus_damage"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "Prototype: adds 2 physical damage after a hit."
-  },
-  {
-    "id": "huangzhong_snipe",
-    "name": "烈弓",
-    "trigger": "attack_hit",
-    "effect_type": "bonus_damage",
-    "target": "attack_target",
-    "params": {
-      "damage": 2,
-      "damage_type": "true"
+    {
+        "id":  "huangzhong_snipe",
+        "name":  "烈弓",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "params":  {
+                       "damage":  2,
+                       "damage_type":  "true"
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "攻击命中后：追加 2 点真实伤害。",
+        "owner_hero_id":  "huangzhong",
+        "skill_type":  "burst",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "archer",
+                     "snipe",
+                     "bonus_damage"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "攻击命中后：对目标追加 2 点真实伤害。"
-  },
-  {
-    "id": "guojia_strategy",
-    "name": "遗计",
-    "trigger": "deploy",
-    "effect_type": "enemy_attack_delta",
-    "target": "enemy_side",
-    "params": {
-      "attack_delta": -2
+    {
+        "id":  "guojia_strategy",
+        "name":  "遗计",
+        "trigger":  "deploy",
+        "effect_type":  "enemy_attack_delta",
+        "target":  "enemy_side",
+        "params":  {
+                       "attack_delta":  -2
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "部署时：敌方全军攻击力 -2，持续 1 回合。",
+        "owner_hero_id":  "guojia",
+        "skill_type":  "debuff",
+        "attack_shape":  "all_enemies",
+        "target_filter":  "enemy_side",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "debuff"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "部署时：敌方全军攻击力 -2，持续 1 回合。"
-  },
-  {
-    "id": "dianwei_rage",
-    "name": "恶来",
-    "trigger": "turn_start",
-    "effect_type": "modify_stat",
-    "target": "self",
-    "params": {
-      "attack": 1,
-      "heal": 1
+    {
+        "id":  "dianwei_rage",
+        "name":  "恶来",
+        "trigger":  "turn_start",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "params":  {
+                       "attack":  1,
+                       "heal":  1
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "回合开始时：自身攻击 +1，并回复 1 点生命。",
+        "owner_hero_id":  "dianwei",
+        "skill_type":  "growth",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "tank",
+                     "growth"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "回合开始时：自身攻击 +1，并回复 1 点生命。"
-  },
-  {
-    "id": "xunyu_aid",
-    "name": "王佐",
-    "trigger": "turn_start",
-    "effect_type": "adjacent_modify",
-    "target": "adjacent_allies",
-    "params": {
-      "heal": 2
+    {
+        "id":  "xunyu_aid",
+        "name":  "王佐",
+        "trigger":  "turn_start",
+        "effect_type":  "adjacent_modify",
+        "target":  "adjacent_allies",
+        "params":  {
+                       "heal":  2
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "回合开始时：为相邻友军回复 2 点生命。",
+        "owner_hero_id":  "xunyu",
+        "skill_type":  "heal",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "adjacent_allies",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "heal"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "回合开始时：为相邻友军回复 2 点生命。"
-  },
-  {
-    "id": "dongzhuo_feast",
-    "name": "酒池",
-    "trigger": "turn_start",
-    "effect_type": "modify_stat",
-    "target": "self",
-    "params": {
-      "heal": 3
+    {
+        "id":  "dongzhuo_feast",
+        "name":  "酒池",
+        "trigger":  "turn_start",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "params":  {
+                       "heal":  3
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "回合开始时：自身回复 3 点生命，不超过生命上限。",
+        "owner_hero_id":  "dongzhuo",
+        "skill_type":  "self_heal",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "tank",
+                     "heal"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "回合开始时：自身回复 3 点生命，不超过生命上限。"
-  },
-  {
-    "id": "diaochan_charm",
-    "name": "离间",
-    "trigger": "deploy",
-    "effect_type": "enemy_attack_delta",
-    "target": "enemy_side",
-    "params": {
-      "attack_delta": -1
+    {
+        "id":  "diaochan_charm",
+        "name":  "离间",
+        "trigger":  "deploy",
+        "effect_type":  "enemy_attack_delta",
+        "target":  "enemy_side",
+        "params":  {
+                       "attack_delta":  -1
+                   },
+        "duration_turns":  2,
+        "stacking":  "unique",
+        "description":  "部署时：敌方全军攻击力 -1，持续 2 回合。",
+        "owner_hero_id":  "diaochan",
+        "skill_type":  "debuff",
+        "attack_shape":  "all_enemies",
+        "target_filter":  "enemy_side",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "mage",
+                     "debuff"
+                 ]
     },
-    "duration_turns": 1,
-    "stacking": "unique",
-    "description": "部署时：敌方全军攻击力 -1，持续 1 回合。"
-  },
-  {
-    "id": "gongsunzan_cavalry",
-    "name": "白马",
-    "trigger": "attack_hit",
-    "effect_type": "bonus_damage",
-    "target": "attack_target",
-    "params": {
-      "damage": 1,
-      "damage_type": "physical"
+    {
+        "id":  "gongsunzan_cavalry",
+        "name":  "白马",
+        "trigger":  "attack_hit",
+        "effect_type":  "side_move",
+        "target":  "self_side",
+        "params":  {
+                       "move_delta":  1
+                   },
+        "duration_turns":  1,
+        "stacking":  "unique",
+        "description":  "攻击命中后：我方全军移动 +1，持续 1 回合。",
+        "owner_hero_id":  "gongsunzan",
+        "skill_type":  "sustain_damage",
+        "attack_shape":  "all_allies",
+        "target_filter":  "self_side",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "archer",
+                     "mobility",
+                     "side_buff"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "攻击命中后：对目标追加 1 点物理伤害。"
-  },
-  {
-    "id": "huaxiong_execute",
-    "name": "斩将",
-    "trigger": "attack_hit",
-    "effect_type": "bonus_damage",
-    "target": "attack_target",
-    "params": {
-      "damage": 2,
-      "damage_type": "physical"
+    {
+        "id":  "huaxiong_execute",
+        "name":  "斩将",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "params":  {
+                       "damage":  2,
+                       "damage_type":  "true"
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "攻击命中后：贴身目标追加 2 点真实伤害。",
+        "owner_hero_id":  "huaxiong",
+        "skill_type":  "burst",
+        "attack_shape":  "front_1",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "warrior",
+                     "execute",
+                     "bonus_damage"
+                 ]
     },
-    "duration_turns": 0,
-    "stacking": "unique",
-    "description": "攻击命中后：对目标追加 2 点物理伤害。"
-  }
+    {
+        "id":  "sunce_assault",
+        "name":  "小霸王突击",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "params":  {
+                       "damage":  2,
+                       "damage_type":  "physical"
+                   },
+        "duration_turns":  0,
+        "stacking":  "unique",
+        "description":  "攻击命中后：追加 2 点物理伤害。",
+        "owner_hero_id":  "sunce",
+        "skill_type":  "burst",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "cooldown_turns":  0,
+        "cost":  0,
+        "tags":  [
+                     "warrior",
+                     "bonus_damage"
+                 ]
+    },
+    {
+        "id":  "machao_silver_charge",
+        "name":  "银枪突阵",
+        "owner_hero_id":  "machao",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "damage":  1,
+                       "damage_type":  "true"
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "charge",
+                     "bonus_damage"
+                 ],
+        "description":  "攻击命中后：追加 1 点真实伤害。"
+    },
+    {
+        "id":  "pangtong_chain_fire",
+        "name":  "连环火计",
+        "owner_hero_id":  "pangtong",
+        "skill_type":  "area_damage",
+        "trigger":  "attack_hit",
+        "effect_type":  "area_damage",
+        "target":  "attack_target",
+        "attack_shape":  "cross",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "damage":  2,
+                       "damage_type":  "magic",
+                       "radius":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "area_damage"
+                 ],
+        "description":  "攻击命中后：对目标十字范围造成 2 点法术伤害。"
+    },
+    {
+        "id":  "weiyan_rebel_blade",
+        "name":  "狂骨",
+        "owner_hero_id":  "weiyan",
+        "skill_type":  "growth",
+        "trigger":  "turn_start",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "attack":  1,
+                       "max_hp":  2,
+                       "heal":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "growth"
+                 ],
+        "description":  "回合开始时：自身攻击 +1、生命上限 +2，并回复 1 点。"
+    },
+    {
+        "id":  "jiangwei_counterplan",
+        "name":  "继志",
+        "owner_hero_id":  "jiangwei",
+        "skill_type":  "buff",
+        "trigger":  "deploy",
+        "effect_type":  "attack_buff",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "counter",
+                     "buff"
+                 ],
+        "description":  "部署时：自身攻击 +1，持续 2 回合。"
+    },
+    {
+        "id":  "guanping_guard_blade",
+        "name":  "承义",
+        "owner_hero_id":  "guanping",
+        "skill_type":  "shield",
+        "trigger":  "turn_start",
+        "effect_type":  "shield",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "shield",
+                     "guard"
+                 ],
+        "description":  "回合开始时：自身获得 1 点护盾。"
+    },
+    {
+        "id":  "zhangbao_tiger_sweep",
+        "name":  "虎咆",
+        "owner_hero_id":  "zhangbao",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "stun",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "control",
+                     "stun"
+                 ],
+        "description":  "攻击命中后：目标眩晕 1 回合。"
+    },
+    {
+        "id":  "mifuren_silk_aid",
+        "name":  "慈护",
+        "owner_hero_id":  "mifuren",
+        "skill_type":  "heal",
+        "trigger":  "turn_start",
+        "effect_type":  "heal",
+        "target":  "ally_nearest",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "ally_nearest",
+        "params":  {
+                       "heal":  2
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "heal"
+                 ],
+        "description":  "回合开始时：恢复生命最低友军 2 点生命。"
+    },
+    {
+        "id":  "madai_frontier_cut",
+        "name":  "边袭",
+        "owner_hero_id":  "madai",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "slow",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "growth"
+                 ],
+        "description":  "攻击命中后：目标移动 -1，持续 1 回合。"
+    },
+    {
+        "id":  "xuchu_tiger_guard",
+        "name":  "虎痴护体",
+        "owner_hero_id":  "xuchu",
+        "skill_type":  "shield",
+        "trigger":  "deploy",
+        "effect_type":  "shield",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "value":  3
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "tank",
+                     "shield"
+                 ],
+        "description":  "部署时：自身获得 3 点护盾。"
+    },
+    {
+        "id":  "zhenji_luoshen_freeze",
+        "name":  "洛神凝霜",
+        "owner_hero_id":  "zhenji",
+        "skill_type":  "control",
+        "trigger":  "attack_hit",
+        "effect_type":  "stun",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_plus_adjacent_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "control"
+                 ],
+        "description":  "攻击命中后：目标眩晕 1 回合。"
+    },
+    {
+        "id":  "caoren_fortress_guard",
+        "name":  "固守",
+        "owner_hero_id":  "caoren",
+        "skill_type":  "shield",
+        "trigger":  "turn_start",
+        "effect_type":  "shield",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "value":  2
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "tank",
+                     "shield"
+                 ],
+        "description":  "回合开始时：自身获得 2 点护盾。"
+    },
+    {
+        "id":  "caopi_edict",
+        "name":  "文帝令",
+        "owner_hero_id":  "caopi",
+        "skill_type":  "buff",
+        "trigger":  "deploy",
+        "effect_type":  "attack_buff",
+        "target":  "ally_nearest",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "ally_nearest",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "edict",
+                     "buff"
+                 ],
+        "description":  "部署时：生命最低友军攻击 +1，持续 2 回合。"
+    },
+    {
+        "id":  "lejin_breakthrough",
+        "name":  "先登",
+        "owner_hero_id":  "lejin",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "backstab_target",
+        "params":  {
+                       "damage":  3,
+                       "fallback_damage":  1,
+                       "damage_type":  "physical",
+                       "require_backstab":  true
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "assassin",
+                     "backstab",
+                     "burst"
+                 ],
+        "description":  "命中后追加 1 点物理伤害；背刺时追加 3 点。"
+    },
+    {
+        "id":  "xiahoudun_blood_eye",
+        "name":  "刚烈",
+        "owner_hero_id":  "xiahoudun",
+        "skill_type":  "growth",
+        "trigger":  "turn_start",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "attack":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "growth"
+                 ],
+        "description":  "回合开始时：自身攻击 +1。"
+    },
+    {
+        "id":  "ganning_jinfan_raid",
+        "name":  "锦帆袭",
+        "owner_hero_id":  "ganning",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "backstab_target",
+        "params":  {
+                       "damage":  2,
+                       "damage_type":  "physical"
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "assassin",
+                     "raid",
+                     "burst"
+                 ],
+        "description":  "攻击命中后：追加 2 点物理伤害。"
+    },
+    {
+        "id":  "sunjian_tiger_roar",
+        "name":  "江东虎啸",
+        "owner_hero_id":  "sunjian",
+        "skill_type":  "growth",
+        "trigger":  "turn_start",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "attack":  1,
+                       "max_hp":  1,
+                       "heal":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "growth"
+                 ],
+        "description":  "回合开始时：自身攻击 +1、生命上限 +1，并回复 1 点。"
+    },
+    {
+        "id":  "lumeng_study_strike",
+        "name":  "士别三日",
+        "owner_hero_id":  "lumeng",
+        "skill_type":  "growth",
+        "trigger":  "deploy",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "attack":  1,
+                       "max_hp":  1,
+                       "heal":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "growth",
+                     "study"
+                 ],
+        "description":  "部署时：自身攻击 +1、生命上限 +1，并回复 1 点。"
+    },
+    {
+        "id":  "xiaoqiao_flower_heal",
+        "name":  "花月",
+        "owner_hero_id":  "xiaoqiao",
+        "skill_type":  "buff",
+        "trigger":  "turn_start",
+        "effect_type":  "attack_buff",
+        "target":  "ally_nearest",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "ally_nearest",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "buff",
+                     "support"
+                 ],
+        "description":  "回合开始时：生命最低友军攻击 +1，持续 2 回合。"
+    },
+    {
+        "id":  "taishici_piercing_arrow",
+        "name":  "贯矢",
+        "owner_hero_id":  "taishici",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "bonus_damage",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_plus_adjacent_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "damage":  1,
+                       "damage_type":  "true"
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "archer",
+                     "bonus_damage",
+                     "pierce"
+                 ],
+        "description":  "攻击命中后：追加 1 点真实伤害。"
+    },
+    {
+        "id":  "huanggai_bitter_guard",
+        "name":  "苦肉护阵",
+        "owner_hero_id":  "huanggai",
+        "skill_type":  "growth",
+        "trigger":  "deploy",
+        "effect_type":  "modify_stat",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "max_hp":  3,
+                       "heal":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "tank",
+                     "growth",
+                     "self_heal"
+                 ],
+        "description":  "部署时：自身生命上限 +3，并回复 1 点生命。"
+    },
+    {
+        "id":  "zhoutai_scar_guard",
+        "name":  "不屈",
+        "owner_hero_id":  "zhoutai",
+        "skill_type":  "shield",
+        "trigger":  "turn_start",
+        "effect_type":  "shield",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "tank",
+                     "shield"
+                 ],
+        "description":  "回合开始时：自身获得 1 点护盾，持续 2 回合。"
+    },
+    {
+        "id":  "lingtong_swift_cut",
+        "name":  "急袭",
+        "owner_hero_id":  "lingtong",
+        "skill_type":  "burst",
+        "trigger":  "deploy",
+        "effect_type":  "side_move",
+        "target":  "self_side",
+        "attack_shape":  "all_allies",
+        "target_filter":  "self_side",
+        "params":  {
+                       "move_delta":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "mobility",
+                     "assist"
+                 ],
+        "description":  "部署时：我方全军移动 +1，持续 2 回合。"
+    },
+    {
+        "id":  "lusu_alliance_aid",
+        "name":  "结盟",
+        "owner_hero_id":  "lusu",
+        "skill_type":  "buff",
+        "trigger":  "turn_start",
+        "effect_type":  "attack_buff",
+        "target":  "ally_nearest",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "ally_nearest",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "buff"
+                 ],
+        "description":  "回合开始时：生命最低友军攻击 +1，持续 1 回合。"
+    },
+    {
+        "id":  "chengpu_veteran_aid",
+        "name":  "老将扶持",
+        "owner_hero_id":  "chengpu",
+        "skill_type":  "heal",
+        "trigger":  "turn_start",
+        "effect_type":  "adjacent_modify",
+        "target":  "adjacent_allies",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "adjacent_allies",
+        "params":  {
+                       "heal":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "heal"
+                 ],
+        "description":  "回合开始时：相邻友军回复 1 点生命。"
+    },
+    {
+        "id":  "sunquan_command",
+        "name":  "制衡令",
+        "owner_hero_id":  "sunquan",
+        "skill_type":  "buff",
+        "trigger":  "deploy",
+        "effect_type":  "attack_buff",
+        "target":  "ally_nearest",
+        "attack_shape":  "ally_nearest",
+        "target_filter":  "ally_nearest",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "growth",
+                     "buff"
+                 ],
+        "description":  "部署时：生命最低友军攻击 +1，持续 1 回合。"
+    },
+    {
+        "id":  "daqiao_lotus_heal",
+        "name":  "流离莲护",
+        "owner_hero_id":  "daqiao",
+        "skill_type":  "heal",
+        "trigger":  "turn_start",
+        "effect_type":  "heal",
+        "target":  "all_allies",
+        "attack_shape":  "all_allies",
+        "target_filter":  "all_allies",
+        "params":  {
+                       "heal":  1
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "heal",
+                     "area"
+                 ],
+        "description":  "回合开始时：我方全体回复 1 点生命。"
+    },
+    {
+        "id":  "xusheng_fortified_line",
+        "name":  "疑城",
+        "owner_hero_id":  "xusheng",
+        "skill_type":  "shield",
+        "trigger":  "deploy",
+        "effect_type":  "shield",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "value":  2
+                   },
+        "duration_turns":  3,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "tank",
+                     "shield"
+                 ],
+        "description":  "部署时：自身获得 2 点护盾，持续 3 回合。"
+    },
+    {
+        "id":  "yuanshao_coalition_order",
+        "name":  "盟主令",
+        "owner_hero_id":  "yuanshao",
+        "skill_type":  "buff",
+        "trigger":  "turn_start",
+        "effect_type":  "side_move",
+        "target":  "self_side",
+        "attack_shape":  "all_allies",
+        "target_filter":  "self_side",
+        "params":  {
+                       "move_delta":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "command",
+                     "buff"
+                 ],
+        "description":  "回合开始时：我方全军移动 +1，持续 2 回合。"
+    },
+    {
+        "id":  "yuanshu_false_edict",
+        "name":  "伪诏",
+        "owner_hero_id":  "yuanshu",
+        "skill_type":  "damage",
+        "trigger":  "deploy",
+        "effect_type":  "enemy_attack_delta",
+        "target":  "all_enemies",
+        "attack_shape":  "all_enemies",
+        "target_filter":  "all_enemies",
+        "params":  {
+                       "attack_delta":  -1
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "debuff",
+                     "control"
+                 ],
+        "description":  "部署时：敌方全军攻击 -1，持续 1 回合。"
+    },
+    {
+        "id":  "jiaxu_poison_plan",
+        "name":  "毒策",
+        "owner_hero_id":  "jiaxu",
+        "skill_type":  "debuff",
+        "trigger":  "attack_hit",
+        "effect_type":  "apply_status",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_plus_adjacent_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "status_id":  "burn",
+                       "value":  2
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "burn"
+                 ],
+        "description":  "攻击命中后：目标获得 2 回合燃烧，每回合 2 伤害。"
+    },
+    {
+        "id":  "chengong_righteous_plan",
+        "name":  "明策",
+        "owner_hero_id":  "chengong",
+        "skill_type":  "control",
+        "trigger":  "attack_hit",
+        "effect_type":  "slow",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_plus_adjacent_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "mage",
+                     "control",
+                     "slow"
+                 ],
+        "description":  "攻击命中后：目标移动 -1，持续 2 回合。"
+    },
+    {
+        "id":  "gaoshun_camp_guard",
+        "name":  "陷阵",
+        "owner_hero_id":  "gaoshun",
+        "skill_type":  "shield",
+        "trigger":  "turn_start",
+        "effect_type":  "shield",
+        "target":  "self",
+        "attack_shape":  "self",
+        "target_filter":  "self",
+        "params":  {
+                       "value":  3
+                   },
+        "duration_turns":  1,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "tank",
+                     "shield"
+                 ],
+        "description":  "回合开始时：自身获得 3 点护盾。"
+    },
+    {
+        "id":  "yanliang_vanguard_cut",
+        "name":  "猛进",
+        "owner_hero_id":  "yanliang",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "damage",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "damage":  2,
+                       "damage_type":  "physical"
+                   },
+        "duration_turns":  0,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "vanguard",
+                     "burst"
+                 ],
+        "description":  "攻击命中后：对目标造成 2 点物理伤害。"
+    },
+    {
+        "id":  "wenchou_hook_spear",
+        "name":  "钩骑",
+        "owner_hero_id":  "wenchou",
+        "skill_type":  "burst",
+        "trigger":  "attack_hit",
+        "effect_type":  "slow",
+        "target":  "attack_target",
+        "attack_shape":  "same_row_forward",
+        "target_filter":  "attack_target",
+        "params":  {
+                       "value":  1
+                   },
+        "duration_turns":  2,
+        "cooldown_turns":  0,
+        "cost":  0,
+        "stacking":  "unique",
+        "tags":  [
+                     "warrior",
+                     "control",
+                     "slow"
+                 ],
+        "description":  "攻击命中后：目标移动 -1，持续 2 回合。"
+    }
 ]

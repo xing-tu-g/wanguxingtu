@@ -6,106 +6,66 @@ const BoardModelScript: GDScript = preload("res://scripts/battle/BoardModel.gd")
 
 func _init() -> void:
 	var failures: Array[String] = []
-	await _check_initial_deck_hand_status(failures)
-	await _check_deploy_updates_player_hand_status(failures)
-	await _check_advance_turn_draws_player_card(failures)
-	await _check_enemy_auto_deploy_updates_enemy_hand_status(failures)
-	await _check_reset_restores_hand_status(failures)
+	var screen = BattleScreenScene.instantiate()
+	root.add_child(screen)
 	await process_frame
 
+	_check_initial_deck_hand_status(screen, failures)
+	await _check_deploy_refills_player_hand_status(screen, failures)
+	_check_reset_hidden_but_restores_hand_status(screen, failures)
+
+	screen.queue_free()
+	await process_frame
 	if failures.is_empty():
 		print("M21 card count HUD checks passed")
 		quit(0)
 		return
-
 	for failure in failures:
 		printerr(failure)
 	quit(1)
 
 
-func _check_initial_deck_hand_status(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	_expect(screen.player_hud_label.text.find("我方") >= 0, "initial player HUD names side", failures)
-	_expect(_hud_has_hp(screen.player_hud_label.text, "30/30"), "initial player HP shown", failures)
-	_expect(_hud_has_star_power(screen.player_hud_label.text, 5), "initial player star power shown", failures)
-	_expect(screen.player_hud_label.text.find("牌库 3") >= 0, "initial player deck count shown", failures)
-	_expect(screen.player_hud_label.text.find("手牌 3") >= 0, "initial player hand count shown", failures)
-	_expect(screen.enemy_hud_label.text.find("敌方") >= 0, "initial enemy HUD names side", failures)
-	_expect(_hud_has_hp(screen.enemy_hud_label.text, "30/30"), "initial enemy HP shown", failures)
-	_expect(_hud_has_star_power(screen.enemy_hud_label.text, 6), "initial enemy star power shown", failures)
-	_expect(screen.enemy_hud_label.text.find("牌库 3") >= 0, "initial enemy deck count shown", failures)
-	_expect(screen.enemy_hud_label.text.find("手牌 3") >= 0, "initial enemy hand count shown", failures)
-	screen.queue_free()
-
-
-func _check_deploy_updates_player_hand_status(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	screen.battle_state.set_star_power(BoardModelScript.SIDE_LEFT, 10)
-	screen.selected_hero_id = "guanyu"
-	screen._deploy_selected_to_cell(2, 3)
-	await process_frame
-	_expect(_hud_has_star_power(screen.player_hud_label.text, 5), "player deployment updates star power", failures)
-	_expect(screen.player_hud_label.text.find("牌库 3") >= 0, "player deployment keeps deck count", failures)
-	_expect(screen.player_hud_label.text.find("手牌 2") >= 0, "player deployment updates hand count", failures)
-	_expect(screen.hero_buttons["guanyu"].disabled, "deployed player card button is disabled", failures)
-	_expect(str(screen.hero_buttons["guanyu"].text).find("已出") >= 0, "deployed player card button shows spent state", failures)
-	screen.queue_free()
-
-
-func _check_advance_turn_draws_player_card(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	screen._advance_turn()
-	await process_frame
-	_expect(_hud_has_star_power(screen.player_hud_label.text, 7), "player turn start updates star power", failures)
-	_expect(screen.player_hud_label.text.find("牌库 2") >= 0, "player turn start draws one card from deck", failures)
-	_expect(screen.player_hud_label.text.find("手牌 4") >= 0, "player turn start updates hand count", failures)
-	_expect(not screen.hero_buttons["zhaoyun"].disabled, "drawn player card becomes selectable", failures)
-	screen.queue_free()
-
-
-func _check_enemy_auto_deploy_updates_enemy_hand_status(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	var result: Dictionary = screen._auto_deploy_enemy()
-	screen._update_status("敌方自动部署测试。")
-	await process_frame
-	_expect(bool(result.get("ok", false)), "enemy auto deployment succeeds", failures)
-	_expect(_hud_has_star_power(screen.enemy_hud_label.text, 1), "enemy deployment updates star power", failures)
-	_expect(screen.enemy_hud_label.text.find("牌库 3") >= 0, "enemy deployment keeps deck count", failures)
-	_expect(screen.enemy_hud_label.text.find("手牌 2") >= 0, "enemy deployment updates hand count", failures)
-	screen.queue_free()
-
-
-func _check_reset_restores_hand_status(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	screen.battle_state.set_star_power(BoardModelScript.SIDE_LEFT, 10)
-	screen.selected_hero_id = "guanyu"
-	screen._deploy_selected_to_cell(2, 3)
-	await process_frame
+func _check_initial_deck_hand_status(screen: Control, failures: Array[String]) -> void:
 	screen._reset_debug_battle()
+	var expected_reserve: int = screen._player_battle_hero_ids().size() - 5
+	_expect(screen.player_hand.size() == 5, "initial player hand has five cards", failures)
+	_expect(screen.player_deck.size() == expected_reserve, "initial player deck keeps configured reserve cards", failures)
+	_expect(screen.enemy_hand.size() == 5, "initial enemy hand has five cards", failures)
+	_expect(screen.enemy_deck.size() == expected_reserve, "initial enemy deck keeps configured reserve cards", failures)
+	_expect(screen.player_hud_label.text.length() > 0, "initial player HUD has text", failures)
+	_expect(screen.enemy_hud_label.text.length() > 0, "initial enemy HUD has text", failures)
+
+
+func _check_deploy_refills_player_hand_status(screen: Control, failures: Array[String]) -> void:
+	screen._reset_debug_battle()
+	screen.battle_state.set_star_power(BoardModelScript.SIDE_LEFT, 10)
+	var deck_before: int = screen.player_deck.size()
+	var hero_id := str(screen.player_hand[0])
+	screen._select_hero(hero_id)
+	var cell := _first_deploy_cell(screen)
+	screen._deploy_selected_to_cell(cell.x, cell.y)
 	await process_frame
-	_expect(_hud_has_star_power(screen.player_hud_label.text, 5), "reset restores player star power", failures)
-	_expect(screen.player_hud_label.text.find("牌库 3") >= 0, "reset restores player deck count", failures)
-	_expect(screen.player_hud_label.text.find("手牌 3") >= 0, "reset restores player hand count", failures)
-	_expect(_hud_has_star_power(screen.enemy_hud_label.text, 6), "reset restores enemy star power", failures)
-	_expect(screen.enemy_hud_label.text.find("牌库 3") >= 0, "reset restores enemy deck count", failures)
-	_expect(screen.enemy_hud_label.text.find("手牌 3") >= 0, "reset restores enemy hand count", failures)
-	_expect(not screen.hero_buttons["guanyu"].disabled, "reset re-enables spent card button", failures)
-	screen.queue_free()
+	_expect(not screen.player_hand.has(hero_id), "deployed player card leaves hand", failures)
+	_expect(screen.player_hand.size() == 5, "player deployment refills hand from deck", failures)
+	_expect(screen.player_deck.size() == deck_before - 1, "player deployment consumes one reserve deck card", failures)
 
 
-func _make_screen():
-	var screen = BattleScreenScene.instantiate()
-	root.add_child(screen)
-	await process_frame
-	return screen
+func _check_reset_hidden_but_restores_hand_status(screen: Control, failures: Array[String]) -> void:
+	var reset_button: Button = screen.get_node("BottomHand/Controls/ResetButton")
+	_expect(not reset_button.visible, "reset button is hidden in normal battle UI", failures)
+	screen._reset_debug_battle()
+	var expected_reserve: int = screen._player_battle_hero_ids().size() - 5
+	_expect(screen.player_hand.size() == 5 and screen.player_deck.size() == expected_reserve, "reset restores player deck and hand count", failures)
+	_expect(screen.enemy_hand.size() == 5 and screen.enemy_deck.size() == expected_reserve, "reset restores enemy deck and hand count", failures)
 
 
-func _hud_has_hp(hud_text: String, hp_text: String) -> bool:
-	return hud_text.find("HP ") >= 0 and hud_text.find(hp_text) >= 0
-
-
-func _hud_has_star_power(hud_text: String, expected_value: int) -> bool:
-	return hud_text.find("星力 ") >= 0 and hud_text.find(" %d" % expected_value) >= 0
+func _first_deploy_cell(screen: Control) -> Vector2i:
+	for row in range(1, BoardModelScript.ROWS + 1):
+		var cols_this_row: int = BoardModelScript.get_cols_for_row(row)
+		for column in range(1, cols_this_row + 1):
+			if screen.battle_state.board.can_deploy(BoardModelScript.SIDE_LEFT, column, row):
+				return Vector2i(column, row)
+	return Vector2i(1, 1)
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:

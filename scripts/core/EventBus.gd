@@ -59,6 +59,9 @@ signal unit_damaged(unit: Dictionary, damage: int)
 ## Emitted when a unit's hp reaches 0 and is removed.
 signal unit_died(unit: Dictionary)
 
+## Emitted when a unit skill result is produced; UI uses this for skill pose swaps.
+signal unit_skill_triggered(source_unit: Dictionary, skill_result: Dictionary)
+
 
 # ── 奕星师 (Master) ──────────────────────────────────────────────────
 

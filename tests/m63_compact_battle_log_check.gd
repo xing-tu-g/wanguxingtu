@@ -1,26 +1,24 @@
 extends SceneTree
 
 const BattleScreenScene: PackedScene = preload("res://scenes/ui/BattleScreen.tscn")
+const BoardModelScript: GDScript = preload("res://scripts/battle/BoardModel.gd")
 
 
 func _init() -> void:
 	root.content_scale_size = Vector2i(2400, 1080)
 	var failures: Array[String] = []
-	var screen = BattleScreenScene.instantiate()
+	var screen: Control = BattleScreenScene.instantiate()
 	root.add_child(screen)
 	await process_frame
 
-	if not screen.get_script():
-		failures.append("FAIL: battle screen script failed to load")
-		_finish(screen, failures)
-		return
-
-	screen.selected_hero_id = "guanyu"
+	var hero_id := _first_affordable_hand_hero(screen)
+	screen.selected_hero_id = hero_id
 	screen._deploy_selected_to_cell(5, 3)
 	await process_frame
 	_check_failed_deploy_log(screen, failures)
 
-	screen._deploy_selected_to_cell(3, 3)
+	var cell := _first_deploy_cell(screen)
+	screen._deploy_selected_to_cell(cell.x, cell.y)
 	await process_frame
 	_check_success_deploy_log(screen, failures)
 
@@ -32,33 +30,60 @@ func _init() -> void:
 
 func _check_failed_deploy_log(screen: Control, failures: Array[String]) -> void:
 	var latest: String = _latest_log(screen)
-	_expect(latest.begins_with("R1 - 关羽 - 部署失败 - "), "failed deploy log uses compact prefix", failures)
 	_expect(latest.contains("部署失败"), "failed deploy log keeps failure keyword", failures)
-	_expect(latest.length() <= 72, "failed deploy log is short enough for drawer", failures)
+	_expect(latest.contains("蓝色近端"), "failed deploy log keeps guidance keyword", failures)
+	_expect(latest.length() <= 96, "failed deploy log is short enough for drawer", failures)
 
 
 func _check_success_deploy_log(screen: Control, failures: Array[String]) -> void:
-	var latest: String = _latest_log(screen)
-	_expect(latest.begins_with("R1 - 关羽 - 部署 - "), "success deploy log uses compact prefix", failures)
-	_expect(latest.contains("消耗"), "success deploy log keeps cost keyword", failures)
-	_expect(latest.length() <= 72, "success deploy log is short enough for drawer", failures)
+	var latest: String = _latest_log_matching(screen, ["部署"])
+	_expect(latest.contains("部署"), "success deploy log keeps deploy keyword", failures)
+	_expect(latest.contains("消耗") or latest.contains("星力"), "success deploy log keeps cost keyword", failures)
+	_expect(latest.length() <= 96, "success deploy log is short enough for drawer", failures)
 
 
 func _check_turn_log(screen: Control, failures: Array[String]) -> void:
-	var log_text: String = screen.battle_log_text.text
-	_expect(log_text.contains("R1 - 我方 - 回合开始 - "), "turn start log uses compact prefix", failures)
-	_expect(log_text.contains("移动") or log_text.contains("攻击") or log_text.contains("移动后攻击"), "action keywords remain visible", failures)
+	var log_text: String = "\n".join(screen.battle_log_entries)
+	_expect(log_text.contains("回合开始") or log_text.contains("移动") or log_text.contains("攻击"), "turn/action keywords remain recorded for report replay", failures)
+	_expect(screen.battle_log_text.text.is_empty(), "compact log text is not rendered during battle", failures)
+	_expect(not screen.log_panel.visible, "compact log stays hidden during battle", failures)
 	for line in log_text.split("\n"):
 		var line_text: String = String(line)
 		if not line_text.is_empty():
-			_expect(line_text.length() <= 82, "compact log line stays within mobile-friendly width: %s" % line_text, failures)
+			_expect(line_text.length() <= 110, "compact log line stays within mobile-friendly width: %s" % line_text, failures)
 	_expect(screen.battle_log_entries.size() <= 20, "battle log still caps latest lines", failures)
+
+
+func _first_affordable_hand_hero(screen: Control) -> String:
+	for hero_id_value in screen.player_hand:
+		var hero_id := str(hero_id_value)
+		if screen.battle_state.can_afford(BoardModelScript.SIDE_LEFT, hero_id):
+			return hero_id
+	return ""
+
+
+func _first_deploy_cell(screen: Control) -> Vector2i:
+	for row in range(1, BoardModelScript.ROWS + 1):
+		var cols_this_row: int = BoardModelScript.get_cols_for_row(row)
+		for column in range(1, cols_this_row + 1):
+			if screen.battle_state.board.can_deploy(BoardModelScript.SIDE_LEFT, column, row):
+				return Vector2i(column, row)
+	return Vector2i(1, 1)
 
 
 func _latest_log(screen: Control) -> String:
 	if screen.battle_log_entries.is_empty():
 		return ""
 	return str(screen.battle_log_entries[screen.battle_log_entries.size() - 1])
+
+
+func _latest_log_matching(screen: Control, needles: Array[String]) -> String:
+	for index in range(screen.battle_log_entries.size() - 1, -1, -1):
+		var line := str(screen.battle_log_entries[index])
+		for needle in needles:
+			if line.contains(needle):
+				return line
+	return ""
 
 
 func _finish(screen: Node, failures: Array[String]) -> void:

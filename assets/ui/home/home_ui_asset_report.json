@@ -1,0 +1,551 @@
+{
+  "missing": [],
+  "assets": [
+    {
+      "file": "icon_star_core_default.png",
+      "source_mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_star_core_default.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_star_core_hover.png",
+      "source_mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_star_core_hover.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_star_core_pressed.png",
+      "source_mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_star_core_pressed.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_star_core_matching.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_star_core_matching.png",
+      "processed_path": "res://assets/ui/home/processed/icon_star_core_matching.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_quest_default.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_quest_default.png",
+      "processed_path": "res://assets/ui/home/processed/icon_quest_default.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_quest_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_quest_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_quest_hover.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_quest_pressed.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_quest_pressed.png",
+      "processed_path": "res://assets/ui/home/processed/icon_quest_pressed.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_activity_default.png",
+      "source_mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_activity_default.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_activity_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_activity_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_activity_hover.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_activity_pressed.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_activity_pressed.png",
+      "processed_path": "res://assets/ui/home/processed/icon_activity_pressed.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_deck_default.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_deck_default.png",
+      "processed_path": "res://assets/ui/home/processed/icon_deck_default.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_deck_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_deck_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_deck_hover.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_deck_pressed.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_deck_pressed.png",
+      "processed_path": "res://assets/ui/home/processed/icon_deck_pressed.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_codex_default.png",
+      "source_mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_codex_default.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_codex_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_codex_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_codex_hover.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_codex_pressed.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_codex_pressed.png",
+      "processed_path": "res://assets/ui/home/processed/icon_codex_pressed.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_summon_default.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_summon_default.png",
+      "processed_path": "res://assets/ui/home/processed/icon_summon_default.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_summon_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_summon_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_summon_hover.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_summon_pressed.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_summon_pressed.png",
+      "processed_path": "res://assets/ui/home/processed/icon_summon_pressed.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_report_default.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_report_default.png",
+      "processed_path": "res://assets/ui/home/processed/icon_report_default.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_report_hover.png",
+      "source_mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_report_hover.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_settings_default.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/icon_settings_default.png",
+      "processed_path": "res://assets/ui/home/processed/icon_settings_default.png",
+      "action": "processed_needs_art_fix",
+      "needs_art_fix": true
+    },
+    {
+      "file": "icon_settings_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/icon_settings_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_settings_hover.png",
+      "action": "processed_needs_art_fix",
+      "needs_art_fix": true
+    },
+    {
+      "file": "icon_settings_pressed.png",
+      "source_mode": "RGBA",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_settings_pressed.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_mail_default.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_mail_default.png",
+      "processed_path": "res://assets/ui/home/processed/icon_mail_default.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_mail_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_mail_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_mail_hover.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_mail_pressed.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_mail_pressed.png",
+      "processed_path": "res://assets/ui/home/processed/icon_mail_pressed.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_friends_default.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_friends_default.png",
+      "processed_path": "res://assets/ui/home/processed/icon_friends_default.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_friends_hover.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_friends_hover.png",
+      "processed_path": "res://assets/ui/home/processed/icon_friends_hover.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_friends_pressed.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_friends_pressed.png",
+      "processed_path": "res://assets/ui/home/processed/icon_friends_pressed.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "panel_player_bg.png",
+      "source_mode": "RGB",
+      "size": [
+        1448,
+        1086
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/panel_player_bg.png",
+      "processed_path": "res://assets/ui/home/processed/panel_player_bg.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "panel_player_avatar_frame.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/panel_player_avatar_frame.png",
+      "processed_path": "res://assets/ui/home/processed/panel_player_avatar_frame.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "panel_player_exp_bar_bg.png",
+      "source_mode": "RGBA",
+      "size": [
+        1536,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/panel_player_exp_bar_bg.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "panel_player_exp_bar_fill.png",
+      "source_mode": "RGB",
+      "size": [
+        2804,
+        561
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/panel_player_exp_bar_fill.png",
+      "processed_path": "res://assets/ui/home/processed/panel_player_exp_bar_fill.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "star_map_background.png",
+      "source_mode": "RGB",
+      "size": [
+        1672,
+        941
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/star_map_background.png",
+      "processed_path": "",
+      "action": "copied_opaque_allowed",
+      "needs_art_fix": false
+    },
+    {
+      "file": "star_map_orbit_layer.png",
+      "source_mode": "RGB",
+      "size": [
+        1672,
+        941
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/star_map_orbit_layer.png",
+      "processed_path": "res://assets/ui/home/processed/star_map_orbit_layer.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "star_map_node.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/star_map_node.png",
+      "processed_path": "res://assets/ui/home/processed/star_map_node.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "star_map_glow.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/star_map_glow.png",
+      "processed_path": "res://assets/ui/home/processed/star_map_glow.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "panel_topbar_bg.png",
+      "source_mode": "RGBA",
+      "size": [
+        1536,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/panel_topbar_bg.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_coin.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_coin.png",
+      "processed_path": "res://assets/ui/home/processed/icon_coin.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_star_coin.png",
+      "source_mode": "RGB",
+      "size": [
+        1254,
+        1254
+      ],
+      "has_clean_alpha": false,
+      "used_path": "res://assets/ui/home/processed/icon_star_coin.png",
+      "processed_path": "res://assets/ui/home/processed/icon_star_coin.png",
+      "action": "processed_transparent",
+      "needs_art_fix": false
+    },
+    {
+      "file": "icon_star_track.png",
+      "source_mode": "RGBA",
+      "size": [
+        1536,
+        1024
+      ],
+      "has_clean_alpha": true,
+      "used_path": "res://assets/ui/home/icon_star_track.png",
+      "processed_path": "",
+      "action": "copied_clean_alpha",
+      "needs_art_fix": false
+    }
+  ]
+}

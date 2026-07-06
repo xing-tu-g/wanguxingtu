@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const BattleStateScript: GDScript = preload("res://scripts/battle/BattleState.gd")
 const DataLoaderScript: GDScript = preload("res://scripts/data/DataLoader.gd")
@@ -79,7 +79,8 @@ func _check_strategy_card_rules(failures: Array[String]) -> void:
 	var runner: Dictionary = _add_unit(march_state, "runner", "left", 2, 3, {"move": 1})
 	StrategyCardSystemScript.play_card(march_state, "left", StrategyCardSystemScript.CARD_MARCH)
 	var move_result: Dictionary = MovementSystemScript.move_unit_forward(march_state, runner)
-	_expect(move_result.steps == 2 and int(runner.column) == 4, "march gives +1 movement to current side", failures)
+	_expect(march_state.get_unit_move(runner) == 2, "march records +1 movement on current side", failures)
+	_expect(move_result.steps == 1 and int(runner.column) == 3, "march does not break one-cell forward movement rule", failures)
 
 	var rock_state = BattleStateScript.new()
 	var target: Dictionary = _add_unit(rock_state, "rock_target", "right", 7, 3, {"hp": 15, "max_hp": 15})
@@ -114,7 +115,7 @@ func _check_mvp_12_heroes_and_skills(failures: Array[String]) -> void:
 
 	state.set_star_power("left", 10)
 	var zhuge_result: Dictionary = state.deploy_hero("zhugeliang", "left", 2, 1)
-	_expect(zhuge_result.ok and int(zhuge_result.unit.max_hp) == 8, "Zhuge Liang deploy skill modifies HP", failures)
+	_expect(zhuge_result.ok and int(zhuge_result.get("unit", {}).max_hp) == 8, "Zhuge Liang deploy skill modifies HP", failures)
 
 	var caocao: Dictionary = _add_unit(state, "caocao_unit", "left", 2, 2, {"hero_id": "caocao", "skill_ids": ["caocao_march"], "move": 1})
 	var turns = TurnControllerScript.new(state, "left")
@@ -139,7 +140,9 @@ func _check_mvp_12_heroes_and_skills(failures: Array[String]) -> void:
 	var lvbu: Dictionary = _add_unit(burst_state, "lvbu_unit", "left", 4, 4, {"hero_id": "lvbu", "skill_ids": ["lvbu_rage"], "attack": 5, "range": 1})
 	var burst_target: Dictionary = _add_unit(burst_state, "burst_target", "right", 5, 4, {"hp": 10, "max_hp": 10})
 	var burst_result: Dictionary = MovementSystemScript.act_unit(burst_state, lvbu)
-	_expect(burst_result.skill_results.size() == 1 and int(burst_target.hp) == 3, "Lu Bu prototype bonus damage is observable", failures)
+	var lvbu_skill: Dictionary = _skill_by_id("lvbu_rage")
+	var expected_hp := 10 - int(lvbu.get("attack", 0)) - int(lvbu_skill.get("params", {}).get("damage", 0))
+	_expect(burst_result.skill_results.size() == 1 and int(burst_target.hp) == expected_hp, "Lu Bu configured bonus damage is observable", failures)
 
 
 func _first_rockfall_cell(side: String, seed_value: int) -> Vector2i:
@@ -184,7 +187,7 @@ func _add_unit(state, unit_id: String, side: String, column: int, row: int, over
 	for key in overrides:
 		unit_data[key] = overrides[key]
 	var result: Dictionary = state.create_unit_instance(unit_data, side, column, row)
-	return result.unit
+	return result.get("unit", {})
 
 
 func _by_id(rows: Array) -> Dictionary:
@@ -194,6 +197,14 @@ func _by_id(rows: Array) -> Dictionary:
 	return result
 
 
+func _skill_by_id(skill_id: String) -> Dictionary:
+	for skill: Dictionary in DataLoaderScript.data.get("skills", []):
+		if str(skill.get("id", "")) == skill_id:
+			return skill
+	return {}
+
+
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:
 	if not condition:
 		failures.append("FAIL: %s" % message)
+

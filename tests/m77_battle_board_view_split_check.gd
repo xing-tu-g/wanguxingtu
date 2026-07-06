@@ -19,9 +19,17 @@ func _init() -> void:
 	_expect(screen_source.contains("func _refresh_board"), "BattleScreen keeps refresh-board compatibility wrapper", failures)
 	_expect(screen_source.contains("battle_board_view.refresh("), "refresh-board wrapper delegates to BattleBoardView", failures)
 	_expect(screen_source.contains("func _board_unit_at"), "BattleScreen exposes board data callback", failures)
+	_expect(screen_source.contains("func _board_get_terrain"), "BattleScreen exposes terrain callback", failures)
+	_expect(screen_source.contains("func _board_is_selected_cell"), "BattleScreen exposes selected-cell UI callback", failures)
+	_expect(screen_source.contains("func _board_is_recommended_deploy_cell"), "BattleScreen exposes deploy-hover UI callback", failures)
+	_expect(screen_source.contains("TerrainSystemScript.TERRAIN_GRASS"), "terrain callback falls back to grass for invalid values", failures)
+	_expect(screen_source.contains('preload("res://scripts/ui/theme/BattleUIAssets.gd")'), "BattleScreen preloads battle UI assets", failures)
+	_expect(board_view_source.contains('preload("res://scripts/ui/theme/BattleUIAssets.gd")'), "BattleBoardView preloads battle UI assets", failures)
 	_expect(board_view_source.contains("func build"), "BattleBoardView owns cell button creation", failures)
 	_expect(board_view_source.contains("func refresh"), "BattleBoardView owns cell refresh loop", failures)
 	_expect(board_view_source.contains("deploy_callback.bind(column, row)"), "BattleBoardView wires cell clicks through callback", failures)
+	_expect(board_view_source.contains("func _zone_for_cell"), "BattleBoardView computes zones without non-static BoardModel calls", failures)
+	_expect(board_view_source.contains("GridBackplate"), "BattleBoardView renders grid art as TextureRect backplates", failures)
 
 	if failures.is_empty():
 		print("M77 battle board view split checks passed")

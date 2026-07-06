@@ -10,6 +10,8 @@ const FADE_IN_DURATION := 0.20
 
 var current_screen: Control
 var _transitioning: bool = false
+var _queued_scene_path: String = ""
+var _queued_screen_data: Dictionary = {}
 
 
 func _ready() -> void:
@@ -34,7 +36,8 @@ func _on_screen_changed(scene_path: String, screen_data: Dictionary = {}) -> voi
 
 func show_screen(scene_path: String, screen_data: Dictionary = {}) -> void:
 	if _transitioning:
-		push_warning("ScreenRouter: transition already in progress, skipping %s" % scene_path)
+		_queued_scene_path = scene_path
+		_queued_screen_data = screen_data.duplicate(true)
 		return
 
 	print("万古星图切换页面：%s" % scene_path)
@@ -70,14 +73,20 @@ func show_screen(scene_path: String, screen_data: Dictionary = {}) -> void:
 		_add_and_fade_in(new_screen, scene_path)
 
 
-func _swap_screens(old_screen: Control, new_screen: Control, scene_path: String) -> void:
+func _swap_screens(old_screen, new_screen, scene_path: String) -> void:
+	if not is_instance_valid(new_screen):
+		_transitioning = false
+		return
 	remove_child(old_screen)
 	old_screen.queue_free()
 	current_screen = null
 	_add_and_fade_in(new_screen, scene_path)
 
 
-func _add_and_fade_in(new_screen: Control, scene_path: String) -> void:
+func _add_and_fade_in(new_screen, scene_path: String) -> void:
+	if not is_instance_valid(new_screen):
+		_transitioning = false
+		return
 	current_screen = new_screen
 	new_screen.modulate.a = 0.0
 	add_child(new_screen)
@@ -86,6 +95,16 @@ func _add_and_fade_in(new_screen: Control, scene_path: String) -> void:
 	tween_in.tween_callback(_on_transition_done.bind(scene_path, new_screen))
 
 
-func _on_transition_done(scene_path: String, new_screen: Control) -> void:
+func _on_transition_done(scene_path: String, new_screen) -> void:
+	if not is_instance_valid(new_screen):
+		_transitioning = false
+		return
 	_transitioning = false
 	print("万古星图页面已加载：%s，节点=%s" % [scene_path, new_screen.name])
+	if not _queued_scene_path.is_empty():
+		var next_scene := _queued_scene_path
+		var next_data := _queued_screen_data.duplicate(true)
+		_queued_scene_path = ""
+		_queued_screen_data.clear()
+		if next_scene != scene_path:
+			show_screen(next_scene, next_data)

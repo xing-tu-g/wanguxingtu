@@ -5,6 +5,8 @@ extends Node
 
 var player_name: String = "玩家"
 var master_level: int = 1
+var star_track_value: int = 0
+var star_track_level: int = 1
 
 # ── Economy (MVP placeholder) ────────────────────────────────────────
 
@@ -25,6 +27,8 @@ func _ready() -> void:
 func _reset_defaults() -> void:
 	player_name = "玩家"
 	master_level = 1
+	star_track_value = 0
+	star_track_level = 1
 	gold = 0
 	star_stone = 0
 	battles_fought = 0
@@ -46,6 +50,8 @@ func snapshot() -> Dictionary:
 	return {
 		"player_name": player_name,
 		"master_level": master_level,
+		"star_track_value": star_track_value,
+		"star_track_level": star_track_level,
 		"gold": gold,
 		"star_stone": star_stone,
 		"battles_fought": battles_fought,

@@ -58,7 +58,7 @@ func _check_highland_range(failures: Array[String]) -> void:
 	var archer: Dictionary = _add_unit(state, "archer", "left", 4, 3, {"class": "archer", "range": 2})
 	var target: Dictionary = _add_unit(state, "target", "right", 7, 3)
 	var selected: Dictionary = TargetingSystemScript.select_target(archer, state.get_enemy_units("left"), state.terrain_system)
-	_expect(selected.get("instance_id", "") == target.instance_id, "highland gives archer +1 attack range", failures)
+	_expect(selected.get("instance_id", "") == target.get("instance_id", ""), "highland gives archer +1 attack range", failures)
 
 	var warrior: Dictionary = _add_unit(state, "warrior", "left", 4, 4, {"class": "warrior", "range": 2})
 	var far_target: Dictionary = _add_unit(state, "far_target", "right", 7, 4)
@@ -71,13 +71,13 @@ func _check_swamp_movement(failures: Array[String]) -> void:
 	state.terrain_system.set_terrain(3, 3, TerrainSystemScript.TERRAIN_SWAMP)
 	var mage: Dictionary = _add_unit(state, "mage", "left", 2, 3, {"class": "mage", "move": 2})
 	var mage_result: Dictionary = MovementSystemScript.move_unit_forward(state, mage)
-	_expect(mage_result.steps == 1 and int(mage.column) == 3, "swamp costs non-assassin/non-warrior 2 movement", failures)
+	_expect(int(mage_result.get("steps", 0)) == 0 and int(mage.get("column", 0)) == 2, "swamp cost blocks non-exempt unit under one-cell forward movement", failures)
 
 	var warrior_state = BattleStateScript.new()
 	warrior_state.terrain_system.set_terrain(3, 3, TerrainSystemScript.TERRAIN_SWAMP)
 	var warrior: Dictionary = _add_unit(warrior_state, "warrior", "left", 2, 3, {"class": "warrior", "move": 2})
 	var warrior_result: Dictionary = MovementSystemScript.move_unit_forward(warrior_state, warrior)
-	_expect(warrior_result.steps == 2 and int(warrior.column) == 4, "warrior ignores swamp extra movement cost", failures)
+	_expect(int(warrior_result.get("steps", 0)) == 1 and int(warrior.get("column", 0)) == 3, "warrior ignores swamp extra cost but still advances only one cell", failures)
 
 
 func _check_river_damage_modifiers(failures: Array[String]) -> void:
@@ -87,14 +87,14 @@ func _check_river_damage_modifiers(failures: Array[String]) -> void:
 	var attacker: Dictionary = _add_unit(state, "river_attacker", "left", 4, 2, {"attack": 5, "range": 1})
 	var target: Dictionary = _add_unit(state, "river_target", "right", 5, 2, {"hp": 10})
 	var result: Dictionary = MovementSystemScript.act_unit(state, attacker)
-	_expect(result.damage == 5, "river attacker -1 attack and river target +1 incoming damage both apply", failures)
-	_expect(int(target.hp) == 5, "river unit damage changes target HP", failures)
+	_expect(int(result.get("damage", 0)) == 5, "river attacker -1 attack and river target +1 incoming damage both apply", failures)
+	_expect(int(target.get("hp", 0)) == 5, "river unit damage changes target HP", failures)
 
 	var master_state = BattleStateScript.new()
-	master_state.terrain_system.set_terrain(10, 1, TerrainSystemScript.TERRAIN_RIVER)
-	var master_attacker: Dictionary = _add_unit(master_state, "master_attacker", "left", 10, 1, {"attack": 5, "range": 1})
+	master_state.terrain_system.set_terrain(9, 1, TerrainSystemScript.TERRAIN_RIVER)
+	var master_attacker: Dictionary = _add_unit(master_state, "master_attacker", "left", 9, 1, {"attack": 5, "range": 2})
 	var master_result: Dictionary = MovementSystemScript.act_unit(master_state, master_attacker)
-	_expect(master_result.damage == 3, "river master attack applies attack -1 and master damage -1", failures)
+	_expect(int(master_result.get("damage", 0)) == 3, "river master attack applies attack -1 and master damage -1", failures)
 	_expect(master_state.get_master_hp("right") == 27, "river master damage changes master HP", failures)
 
 
@@ -102,14 +102,14 @@ func _check_supply_cap(failures: Array[String]) -> void:
 	var state = BattleStateScript.new()
 	state.apply_master_damage("left", 5, 0)
 	var result: Dictionary = StrategyCardSystemScript.play_card(state, "left", StrategyCardSystemScript.CARD_SUPPLY)
-	_expect(result.healed == 5, "supply heals only up to master max HP", failures)
+	_expect(int(result.get("healed", 0)) == 5, "supply heals only up to master max HP", failures)
 	_expect(state.get_master_hp("left") == state.get_master_max_hp("left"), "supply does not exceed master max HP", failures)
 
 
 func _check_earthquake_simultaneous_damage(failures: Array[String]) -> void:
 	var state = BattleStateScript.new()
 	var result: Dictionary = StrategyCardSystemScript.play_card(state, "left", StrategyCardSystemScript.CARD_EARTHQUAKE)
-	_expect(result.left_damage == 10 and result.right_damage == 10, "earthquake damages both masters for 10", failures)
+	_expect(int(result.get("left_damage", 0)) == 10 and int(result.get("right_damage", 0)) == 10, "earthquake damages both masters for 10", failures)
 	_expect(state.get_master_hp("left") == 20 and state.get_master_hp("right") == 20, "earthquake reduces both master HP equally", failures)
 
 
@@ -119,7 +119,7 @@ func _check_inspire_one_turn_attack(failures: Array[String]) -> void:
 	var target: Dictionary = _add_unit(state, "target", "right", 5, 1, {"hp": 10})
 	StrategyCardSystemScript.play_card(state, "left", StrategyCardSystemScript.CARD_INSPIRE)
 	var result: Dictionary = MovementSystemScript.act_unit(state, attacker)
-	_expect(result.damage == 4 and int(target.hp) == 6, "inspire grants current side +2 attack this turn", failures)
+	_expect(int(result.get("damage", 0)) == 4 and int(target.get("hp", 0)) == 6, "inspire grants current side +2 attack this turn", failures)
 	state.clear_side_turn_effects("left")
 	_expect(state.get_unit_attack(attacker) == 2, "inspire can be cleared as a one-turn effect", failures)
 
@@ -142,7 +142,7 @@ func _add_unit(state, unit_id: String, side: String, column: int, row: int, over
 	for key in overrides:
 		unit_data[key] = overrides[key]
 	var create_result: Dictionary = state.create_unit_instance(unit_data, side, column, row)
-	return create_result.unit
+	return create_result.get("unit", {})
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:

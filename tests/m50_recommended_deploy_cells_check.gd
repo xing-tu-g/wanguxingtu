@@ -11,28 +11,31 @@ func _init() -> void:
 	await process_frame
 
 	var recommended_count := 0
-	for column in range(1, 4):
-		for row in range(1, BoardModelScript.ROWS + 1):
+	var expected_count := 0
+	for row in range(1, BoardModelScript.ROWS + 1):
+		var deploy_width: int = BoardModelScript.get_deployment_width_for_row(row)
+		expected_count += deploy_width
+		for column in range(1, deploy_width + 1):
 			if screen._should_show_recommended_deploy_cell(column, row):
 				recommended_count += 1
-	_expect(recommended_count == 15, "all empty left deployment cells are recommended before first deploy", failures)
+	_expect(recommended_count == expected_count and expected_count == 12, "all empty left deployment cells are recommended before first deploy", failures)
+	_expect(not screen._should_show_recommended_deploy_cell(3, 3), "row 3 third column is public area, not recommended", failures)
 	_expect(not screen._should_show_recommended_deploy_cell(4, 3), "public area is not recommended", failures)
 	_expect(not screen._should_show_recommended_deploy_cell(8, 3), "enemy deployment area is not recommended", failures)
 
 	var recommended_button: Button = screen.cell_buttons[screen._cell_key(2, 3)]
-	_expect(recommended_button.text.contains("● 可上阵"), "recommended cell text includes deployment hint", failures)
-	var recommended_style: StyleBoxFlat = recommended_button.get_theme_stylebox("normal") as StyleBoxFlat
-	_expect(recommended_style != null, "recommended cell has style", failures)
-	if recommended_style != null:
-		_expect(recommended_style.border_color.is_equal_approx(Color(1.0, 0.82, 0.24, 1.0)), "recommended cell uses gold border", failures)
-		_expect(recommended_style.get_border_width(SIDE_LEFT) >= 5, "recommended cell has thicker border", failures)
+	var recommended_backplate := recommended_button.get_node_or_null("GridBackplate") as TextureRect
+	_expect(recommended_backplate != null and recommended_backplate.texture != null, "recommended cell has grid backplate", failures)
+	if recommended_backplate != null and recommended_backplate.texture != null:
+		_expect(recommended_backplate.texture.resource_path.ends_with("grid_blue_hover.png"), "recommended cell uses hover deploy texture", failures)
 
 	screen.first_deploy_hint_button.pressed.emit()
 	await process_frame
 	screen._refresh_board()
 	await process_frame
 	_expect(not screen._should_show_recommended_deploy_cell(2, 3), "dismissed first deploy hint hides recommended cells", failures)
-	_expect(not str(screen.cell_buttons[screen._cell_key(2, 3)].text).contains("● 可上阵"), "dismissed hint removes recommended text", failures)
+	var dismissed_backplate := screen.cell_buttons[screen._cell_key(2, 3)].get_node_or_null("GridBackplate") as TextureRect
+	_expect(dismissed_backplate != null and dismissed_backplate.texture != null and dismissed_backplate.texture.resource_path.ends_with("grid_blue_idle.png"), "dismissed hint restores idle blue texture", failures)
 
 	screen._reset_debug_battle()
 	await process_frame
@@ -42,7 +45,8 @@ func _init() -> void:
 	screen._deploy_selected_to_cell(2, 3)
 	await process_frame
 	_expect(not screen._should_show_recommended_deploy_cell(1, 1), "successful first deployment hides remaining recommended cells", failures)
-	_expect(not str(screen.cell_buttons[screen._cell_key(1, 1)].text).contains("● 可上阵"), "remaining empty deployment cells lose recommended text after first deploy", failures)
+	var remaining_backplate := screen.cell_buttons[screen._cell_key(1, 1)].get_node_or_null("GridBackplate") as TextureRect
+	_expect(remaining_backplate != null and remaining_backplate.texture != null and remaining_backplate.texture.resource_path.ends_with("grid_blue_idle.png"), "remaining empty deployment cells return to idle texture after first deploy", failures)
 
 	screen.queue_free()
 	if failures.is_empty():

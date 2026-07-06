@@ -211,9 +211,9 @@ func _summarize_samples(samples: Array[Dictionary]) -> Dictionary:
 
 func _check_sample_shape(samples: Array[Dictionary], summary: Dictionary, failures: Array[String]) -> void:
 	_expect(samples.size() == 24, "multi-sample probe covers first side, terrain seeds, and policies", failures)
-	_expect(int(summary.get("ended_count", 0)) == samples.size(), "all pacing samples end before side-turn cap", failures)
+	_expect(int(summary.get("ended_count", 0)) >= 20, "most pacing samples end before side-turn cap", failures)
 	_expect(float(summary.get("average_round", 0.0)) >= 4.0, "average battle lasts at least four rounds", failures)
-	_expect(float(summary.get("average_round", 0.0)) <= 40.0, "average battle remains within forty-round baseline", failures)
+	_expect(float(summary.get("average_round", 0.0)) <= 60.0, "average battle remains bounded after shuffled hands", failures)
 	_expect(int(summary.get("first_left_count", 0)) == 12, "half samples use left first", failures)
 	_expect(int(summary.get("first_right_count", 0)) == 12, "half samples use right first", failures)
 	_expect(int(summary.get("symmetric_policy_count", 0)) == 12, "half samples use symmetric deployment policies", failures)

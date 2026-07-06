@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const CHECK_SCRIPT := "res://scripts/check_test_manifest.ps1"
 const ADB_SCRIPT := "res://scripts/android_smoke_capture.ps1"
@@ -35,7 +35,7 @@ func _check_manifest_tool(failures: Array[String]) -> void:
 func _check_adb_tool(failures: Array[String]) -> void:
 	var source := FileAccess.get_file_as_string(ADB_SCRIPT)
 	_expect(not source.is_empty(), "ADB smoke PowerShell script exists", failures)
-	_expect(source.contains("builds/wanguxingtu-m70-b01-004535-debug.apk"), "ADB tool defaults to current playable APK", failures)
+	_expect(source.contains("builds/wanguxingtu-battle-polish-v3-debug.apk"), "ADB tool defaults to current playable APK", failures)
 	_expect(source.contains("com.wanguxingtu.mvp"), "ADB tool defaults to MVP package name", failures)
 	_expect(source.contains("exec-out") and source.contains("screencap"), "ADB tool uses exec-out screencap", failures)
 	_expect(source.contains("ProcessStartInfo") and source.contains("RedirectStandardOutput") and source.contains("UseShellExecute"), "ADB tool captures native output without PowerShell error records", failures)
@@ -43,7 +43,7 @@ func _check_adb_tool(failures: Array[String]) -> void:
 	_expect(source.contains("ADB_DEVICE_NOT_READY"), "ADB tool reports offline or missing devices clearly", failures)
 	_expect(source.contains("ADB_AUTO_SERIAL"), "ADB tool auto-selects the only online device", failures)
 	_expect(source.contains("am") and source.contains("force-stop"), "ADB tool force-stops app before launch for clean logs", failures)
-	_expect(source.contains("万古星图首页 ready"), "ADB tool waits for Godot home screen log before screenshot", failures)
+	_expect(source.contains("ScreenRouter ready") or source.contains("页面已加载"), "ADB tool waits for Godot screen router log before screenshot", failures)
 	_expect(source.contains("ADB_SCREENSHOT_TOO_SMALL"), "ADB tool rejects early black or tiny screenshots", failures)
 	_expect(source.contains("FATAL EXCEPTION|E AndroidRuntime|SCRIPT ERROR|Parse Error|Compile Error"), "ADB tool scans strict crash/script errors", failures)
 	_expect(source.contains("ADB_SMOKE_CAPTURE_CLEAN"), "ADB tool outputs clean sentinel", failures)
@@ -53,7 +53,7 @@ func _check_current_doc(failures: Array[String]) -> void:
 	var source := FileAccess.get_file_as_string(CURRENT_DOC)
 	_expect(source.contains("scripts/check_test_manifest.ps1"), "CURRENT documents manifest sync command", failures)
 	_expect(source.contains("scripts/android_smoke_capture.ps1"), "CURRENT documents ADB smoke command", failures)
-	_expect(source.contains("75"), "CURRENT documents current manifest size", failures)
+	_expect(source.contains("93"), "CURRENT documents current manifest size", failures)
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:

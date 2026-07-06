@@ -3,6 +3,7 @@ class_name BoardModel
 
 # ── 偏移网格常量：9-10-9-10-9 交错布局 ──
 const ROWS := 5
+const COLUMNS := 10
 const SIDE_LEFT := "left"
 const SIDE_RIGHT := "right"
 const ZONE_LEFT_DEPLOYMENT := "left_deployment"
@@ -25,15 +26,30 @@ static func get_cols_for_row(row: int) -> int:
 	return 9 if row % 2 == 1 else 10
 
 
+static func get_total_cell_count() -> int:
+	var count := 0
+	for row in range(1, ROWS + 1):
+		count += get_cols_for_row(row)
+	return count
+
+
 func is_in_bounds(column: int, row: int) -> bool:
 	var max_cols := get_cols_for_row(row)
 	return column >= 1 and column <= max_cols and row >= 1 and row <= ROWS
 
 
+static func get_deployment_width_for_row(row: int) -> int:
+	var max_cols := get_cols_for_row(row)
+	if max_cols <= 0:
+		return 0
+	return 2 if max_cols == 9 else 3
+
+
 func get_zone_for_column(column: int, row: int = -1) -> String:
 	var max_cols := get_cols_for_row(row) if row >= 1 and row <= ROWS else 10
-	var blue_end := ceili(float(max_cols) * 0.3)
-	var red_start := ceili(float(max_cols) * 0.7) + 1
+	var deploy_width := get_deployment_width_for_row(row) if row >= 1 and row <= ROWS else 3
+	var blue_end := deploy_width
+	var red_start := max_cols - deploy_width + 1
 
 	if column >= 1 and column <= blue_end:
 		return ZONE_LEFT_DEPLOYMENT

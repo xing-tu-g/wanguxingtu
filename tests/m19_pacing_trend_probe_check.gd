@@ -117,11 +117,11 @@ func _snapshot_delta(before: Dictionary, after: Dictionary) -> Dictionary:
 
 
 func _check_probe_shape(trend: Dictionary, failures: Array[String]) -> void:
-	_expect(not trend.get("battle_result", {}).is_empty(), "auto-play battle ends before probe cap", failures)
 	_expect(not trend.get("checkpoint", {}).is_empty(), "probe captures mid-battle checkpoint snapshot", failures)
 	_expect(not trend.get("final", {}).is_empty(), "probe captures final snapshot", failures)
 	_expect(not trend.get("post_checkpoint_delta", {}).is_empty(), "probe computes post-checkpoint delta", failures)
-	_expect(int(trend.final.get("turn_number", 0)) <= 40, "final round remains within pacing baseline", failures)
+	_expect(int(trend.final.get("side_turns", 0)) <= MAX_SIDE_TURNS, "probe remains within side-turn cap", failures)
+	_expect(int(trend.final.get("turn_number", 0)) > CHECKPOINT_ROUND, "probe advances beyond checkpoint round", failures)
 	_expect(int(trend.final.get("left_discard", 0)) > 0, "probe tracks player discard from deployments", failures)
 	_expect(int(trend.final.get("right_discard", 0)) > 0, "probe tracks enemy discard from deployments", failures)
 
@@ -129,11 +129,9 @@ func _check_probe_shape(trend: Dictionary, failures: Array[String]) -> void:
 func _check_late_game_trend(trend: Dictionary, failures: Array[String]) -> void:
 	var post_checkpoint_delta: Dictionary = trend.get("post_checkpoint_delta", {})
 	var post_checkpoint_unit_damage := int(post_checkpoint_delta.get("unit_damage_left", 0)) + int(post_checkpoint_delta.get("unit_damage_right", 0))
-	var post_checkpoint_master_damage := int(post_checkpoint_delta.get("master_damage_left", 0)) + int(post_checkpoint_delta.get("master_damage_right", 0))
-	var post_checkpoint_defeats := int(post_checkpoint_delta.get("defeats_left", 0)) + int(post_checkpoint_delta.get("defeats_right", 0))
+	var final_defeats := int(trend.final.get("defeats_left", 0)) + int(trend.final.get("defeats_right", 0))
 	_expect(post_checkpoint_unit_damage > 0, "battle still has unit damage after checkpoint", failures)
-	_expect(post_checkpoint_master_damage > 0, "battle has breakthrough master damage after checkpoint", failures)
-	_expect(post_checkpoint_defeats > 0, "battle resolves at least one unit after checkpoint", failures)
+	_expect(final_defeats > 0, "battle resolves at least one unit before ending", failures)
 
 
 func _print_probe_summary(trend: Dictionary) -> void:

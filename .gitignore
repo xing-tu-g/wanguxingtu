@@ -13,6 +13,7 @@ _downloads/
 *.aab
 
 # Logs and temporary files
+tmp/
 *.log
 *.tmp
 .tmp_*

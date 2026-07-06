@@ -50,6 +50,7 @@ func start_side_turn() -> Dictionary:
 	var restore_amount := get_star_restore_amount()
 	var star_power_before: int = state.get_star_power(current_side)
 	var star_power_after: int = state.restore_star_power(current_side, restore_amount)
+	var faction_energy_results: Array = state.start_faction_energy_side_turn(current_side)
 	side_turns += 1
 	side_turns_by_side[current_side] = int(side_turns_by_side.get(current_side, 0)) + 1
 	side_turn_active = true
@@ -62,6 +63,7 @@ func start_side_turn() -> Dictionary:
 		"star_power_before": star_power_before,
 		"star_power_after": star_power_after,
 		"skill_results": skill_results,
+		"faction_energy_results": faction_energy_results,
 	}
 	pass  # EventBus emit moved to BattleScreen
 	return result

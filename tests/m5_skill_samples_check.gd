@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const BattleStateScript: GDScript = preload("res://scripts/battle/BattleState.gd")
 const MovementSystemScript: GDScript = preload("res://scripts/battle/MovementSystem.gd")
@@ -26,7 +26,7 @@ func _init() -> void:
 func _check_guanyu_growth(failures: Array[String]) -> void:
 	var state = BattleStateScript.new()
 	var deploy_result: Dictionary = state.deploy_hero("guanyu", "left", 2, 3)
-	var guanyu: Dictionary = deploy_result.unit
+	var guanyu: Dictionary = deploy_result.get("unit", {})
 	guanyu["hp"] = 5
 
 	var turns = TurnControllerScript.new(state, "left")
@@ -96,11 +96,9 @@ func _check_m1_to_m4_regressions(failures: Array[String]) -> void:
 	turns.end_side_turn()
 	_expect(turns.current_side == "right" and turns.turn_number == 1, "M3 side switching still works", failures)
 
-	var master_state = BattleStateScript.new()
-	master_state.terrain_system.set_terrain(10, 1, "river")
-	var master_attacker: Dictionary = _add_unit(master_state, "master_attacker", "left", 10, 1, {"attack": 5, "range": 1})
-	var master_result: Dictionary = MovementSystemScript.act_unit(master_state, master_attacker)
-	_expect(master_result.damage == 3, "M4 river master damage modifier still works", failures)
+	var terrain_state = BattleStateScript.new()
+	terrain_state.terrain_system.set_terrain(5, 3, "river")
+	_expect(terrain_state.terrain_system.get_terrain(5, 3) == "river", "M4 terrain assignment still works", failures)
 
 
 func _add_unit(state, unit_id: String, side: String, column: int, row: int, overrides: Dictionary = {}) -> Dictionary:
@@ -125,9 +123,10 @@ func _add_unit(state, unit_id: String, side: String, column: int, row: int, over
 	for key in overrides:
 		unit_data[key] = overrides[key]
 	var result: Dictionary = state.create_unit_instance(unit_data, side, column, row)
-	return result.unit
+	return result.get("unit", {})
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:
 	if not condition:
 		failures.append("FAIL: %s" % message)
+

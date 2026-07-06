@@ -11,7 +11,7 @@ func _init() -> void:
 	_check_front_to_back_order(failures)
 	_check_blocked_movement(failures)
 	_check_attack_before_move(failures)
-	_check_manhattan_targeting(failures)
+	_check_attack_shape_targeting(failures)
 	_check_master_attack(failures)
 
 	if failures.is_empty():
@@ -46,8 +46,8 @@ func _check_blocked_movement(failures: Array[String]) -> void:
 	var assassin: Dictionary = _add_unit(state, "assassin", "left", 2, 4, {"class": "assassin", "move": 3})
 	_add_unit(state, "assassin_blocker", "right", 3, 4)
 	var assassin_result: Dictionary = MovementSystemScript.move_unit_forward(state, assassin)
-	_expect(assassin_result.steps == 3, "assassin can pass blockers", failures)
-	_expect(int(assassin.column) == 5 and int(assassin.row) == 4, "assassin does not stop on occupied cell", failures)
+	_expect(assassin_result.steps == 0, "assassin stops at occupied forward cell", failures)
+	_expect(int(assassin.column) == 2 and int(assassin.row) == 4, "assassin does not pass blockers", failures)
 
 
 func _check_attack_before_move(failures: Array[String]) -> void:
@@ -60,16 +60,24 @@ func _check_attack_before_move(failures: Array[String]) -> void:
 	_expect(int(target.hp) == 3, "attack applies damage to target unit", failures)
 
 
-func _check_manhattan_targeting(failures: Array[String]) -> void:
+func _check_attack_shape_targeting(failures: Array[String]) -> void:
 	var state = BattleStateScript.new()
-	var attacker: Dictionary = _add_unit(state, "ranged", "left", 5, 3, {"range": 3})
-	var diagonal_only: Dictionary = _add_unit(state, "diagonal", "right", 7, 5)
-	var priority: Dictionary = _add_unit(state, "priority", "right", 6, 3)
-	var ignored: Dictionary = _add_unit(state, "ignored", "right", 8, 3)
-	var selected: Dictionary = TargetingSystemScript.select_target(attacker, state.get_enemy_units("left"))
-	_expect(TargetingSystemScript.manhattan_distance(attacker, diagonal_only) == 4, "Manhattan distance counts diagonal offset as row plus column", failures)
-	_expect(selected.instance_id == priority.instance_id, "targeting uses documented column priority among enemies in range", failures)
-	_expect(selected.instance_id != ignored.instance_id, "farther enemy formation priority loses tie", failures)
+	var melee: Dictionary = _add_unit(state, "melee", "left", 5, 3, {"class": "warrior", "range": 3})
+	var off_row: Dictionary = _add_unit(state, "off_row", "right", 6, 4)
+	var same_row: Dictionary = _add_unit(state, "same_row", "right", 7, 3)
+	var melee_selected: Dictionary = TargetingSystemScript.select_target(melee, state.get_enemy_units("left"))
+	_expect(melee_selected.instance_id == same_row.instance_id, "melee attacks same-row target instead of closer adjacent-row target", failures)
+	_expect(melee_selected.instance_id != off_row.instance_id, "melee ignores off-row target", failures)
+
+	var ranged_state = BattleStateScript.new()
+	var ranged: Dictionary = _add_unit(ranged_state, "ranged", "left", 5, 3, {"class": "archer", "range": 3})
+	var adjacent_row: Dictionary = _add_unit(ranged_state, "adjacent_row", "right", 6, 4)
+	var out_of_rows: Dictionary = _add_unit(ranged_state, "out_of_rows", "right", 6, 5)
+	var far_same_row: Dictionary = _add_unit(ranged_state, "far_same_row", "right", 7, 3)
+	var ranged_selected: Dictionary = TargetingSystemScript.select_target(ranged, ranged_state.get_enemy_units("left"))
+	_expect(ranged_selected.instance_id == adjacent_row.instance_id, "ranged unit can attack adjacent row and picks nearest target", failures)
+	_expect(ranged_selected.instance_id != out_of_rows.instance_id, "ranged unit ignores targets outside three-row band", failures)
+	_expect(ranged_selected.instance_id != far_same_row.instance_id, "ranged nearest target wins over farther same-row target", failures)
 
 
 func _check_master_attack(failures: Array[String]) -> void:
@@ -80,8 +88,8 @@ func _check_master_attack(failures: Array[String]) -> void:
 	_expect(state.get_master_hp("right") == 26, "master HP takes full attack damage", failures)
 
 	var blocked_state = BattleStateScript.new()
-	var blocked_attacker: Dictionary = _add_unit(blocked_state, "blocked_master_hitter", "left", 10, 2, {"attack": 4, "range": 1})
-	_add_unit(blocked_state, "enemy_blocker", "right", 10, 3)
+	var blocked_attacker: Dictionary = _add_unit(blocked_state, "blocked_master_hitter", "left", 9, 2, {"attack": 4, "range": 1})
+	_add_unit(blocked_state, "enemy_blocker", "right", 10, 2)
 	var blocked_result: Dictionary = MovementSystemScript.act_unit(blocked_state, blocked_attacker)
 	_expect(blocked_result.target_type != "master", "enemy unit in attack range prevents master attack", failures)
 
@@ -104,7 +112,7 @@ func _add_unit(state, unit_id: String, side: String, column: int, row: int, over
 	for key in overrides:
 		unit_data[key] = overrides[key]
 	var result: Dictionary = state.create_unit_instance(unit_data, side, column, row)
-	return result.unit
+	return result.get("unit", {})
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:

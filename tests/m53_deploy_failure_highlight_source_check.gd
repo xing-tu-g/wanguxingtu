@@ -21,7 +21,7 @@ func _init() -> void:
 	await process_frame
 	_expect(screen.deploy_failure_highlight_active, "wrong-zone failure activates highlight", failures)
 	_expect(screen.deploy_failure_toast_label.text.contains("金边格就是当前可部署位置"), "failure toast explains gold highlighted cells", failures)
-	_expect(screen.status_label.text.contains("部署失败"), "failure status keeps failure prefix", failures)
+	_expect(not screen.status_label.text.contains("部署失败"), "top HUD does not carry battle-event failure text", failures)
 
 	screen._deploy_selected_to_cell(2, 3)
 	await process_frame

@@ -21,6 +21,8 @@ static func create_default_save() -> Dictionary:
 			"yuanbao": 0,
 			"star_jade": 0,
 			"rank_points": 0,
+			"star_track_value": 0,
+			"star_track_level": 1,
 			"rare_tickets": 0,
 			"legendary_tickets": 0,
 		},
@@ -134,6 +136,8 @@ static func build_save_from_appState(app_state, deck_hero_ids: Array = []) -> Di
 	save_data["player"]["master_level"] = int(snap.get("master_level", 1))
 	save_data["player"]["coins"] = int(snap.get("gold", 0))
 	save_data["player"]["star_jade"] = int(snap.get("star_stone", 0))
+	save_data["player"]["star_track_value"] = int(snap.get("star_track_value", 0))
+	save_data["player"]["star_track_level"] = int(snap.get("star_track_level", 1))
 	save_data["deck"]["hero_ids"] = deck_hero_ids.duplicate()
 	return save_data
 
@@ -145,4 +149,8 @@ static func apply_save_to_appState(save_data: Dictionary, app_state) -> void:
 	app_state.master_level = int(player.get("master_level", 1))
 	app_state.gold = int(player.get("coins", 0))
 	app_state.star_stone = int(player.get("star_jade", 0))
+	if "star_track_value" in app_state:
+		app_state.star_track_value = int(player.get("star_track_value", player.get("rank_points", 0)))
+	if "star_track_level" in app_state:
+		app_state.star_track_level = int(player.get("star_track_level", 1))
 	app_state.battles_fought = 0

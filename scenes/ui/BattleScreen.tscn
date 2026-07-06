@@ -1,9 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://battle_screen"]
+[gd_scene load_steps=6 format=3 uid="uid://battle_screen"]
 
 [ext_resource type="Script" path="res://scripts/ui/BattleScreen.gd" id="1_battle_screen"]
-[ext_resource type="Texture2D" path="res://assets/art/backgrounds/B01_battle_background.png" id="2_b01_background"]
+[ext_resource type="Texture2D" path="res://assets/ui/battle/background/battle_background.png" id="2_battle_ui_background"]
 [ext_resource type="Texture2D" path="res://assets/manual_art_inbox/ui/G01_board_10x5_overlay.png" id="3_g01_board_overlay"]
 [ext_resource type="Script" path="res://scripts/ui/UIcon.gd" id="4_uicon"]
+[ext_resource type="Texture2D" path="res://assets/manual_art_inbox/masters/C01_player_astrologer.png" id="5_player_master"]
+[ext_resource type="Texture2D" path="res://assets/manual_art_inbox/masters/C02_enemy_astrologer.png" id="6_enemy_master"]
 [node name="BattleScreen" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -30,7 +32,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_b01_background")
+texture = ExtResource("2_battle_ui_background")
 expand_mode = 1
 stretch_mode = 6
 
@@ -42,7 +44,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.025, 0.055, 0.11, 0.58)
+color = Color(0.018, 0.024, 0.065, 0.18)
 
 [node name="TopBar" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -54,7 +56,7 @@ anchor_bottom = 0.0
 offset_left = 14.0
 offset_top = 10.0
 offset_right = -14.0
-offset_bottom = 150.0
+offset_bottom = 78.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 10
@@ -140,7 +142,8 @@ horizontal_alignment = 2
 vertical_alignment = 1
 
 [node name="TutorialRow" type="HBoxContainer" parent="TopBar/StatusPanel/StatusMargin/StatusRow"]
-custom_minimum_size = Vector2(0, 46)
+visible = false
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 theme_override_constants/separation = 6
 
@@ -213,8 +216,10 @@ theme_override_font_sizes/font_size = 18
 text = "推进"
 
 [node name="LogButton" type="Button" parent="TopBar"]
+visible = false
 custom_minimum_size = Vector2(96, 52)
 layout_mode = 2
+disabled = true
 text = ""
 
 [node name="LogIcon" type="Control" parent="TopBar/LogButton"]
@@ -246,15 +251,15 @@ anchor_top = 0.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 14.0
-offset_top = 158.0
+offset_top = 88.0
 offset_right = -14.0
-offset_bottom = -204.0
+offset_bottom = -206.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
 
 [node name="PlayerMasterPanel" type="PanelContainer" parent="DuelArea"]
-custom_minimum_size = Vector2(230, 0)
+custom_minimum_size = Vector2(212, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -262,11 +267,13 @@ size_flags_vertical = 3
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="PlayerPortrait" type="ColorRect" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
-custom_minimum_size = Vector2(0, 190)
+[node name="PlayerPortrait" type="TextureRect" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
+custom_minimum_size = Vector2(0, 198)
 layout_mode = 2
 size_flags_vertical = 3
-color = Color(0.08, 0.22, 0.55, 0.4)
+texture = ExtResource("5_player_master")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="PlayerPortraitLabel" type="Label" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerPortrait"]
 layout_mode = 1
@@ -299,7 +306,7 @@ vertical_alignment = 1
 clip_text = true
 
 [node name="PlayerHpContainer" type="HBoxContainer" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 theme_override_constants/separation = 4
 
@@ -319,7 +326,7 @@ horizontal_alignment = 0
 vertical_alignment = 1
 
 [node name="PlayerStarRow" type="HBoxContainer" parent="DuelArea/PlayerMasterPanel/PlayerMasterLayout"]
-custom_minimum_size = Vector2(0, 28)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_constants/separation = 4
 
@@ -341,7 +348,7 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
-text = "部署区：蓝 1-3"
+text = "部署区：蓝色近端"
 horizontal_alignment = 0
 vertical_alignment = 1
 clip_text = true
@@ -354,7 +361,8 @@ size_flags_vertical = 3
 theme_override_constants/separation = 4
 
 [node name="ZoneBar" type="HBoxContainer" parent="DuelArea/CenterBoardStack"]
-custom_minimum_size = Vector2(0, 20)
+visible = false
+custom_minimum_size = Vector2(0, 0)
 layout_mode = 2
 theme_override_constants/separation = 0
 
@@ -363,7 +371,7 @@ custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 16
-text = " 蓝区 1-3 "
+text = " 蓝色近端 "
 horizontal_alignment = 1
 vertical_alignment = 1
 clip_text = true
@@ -403,6 +411,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 
 [node name="BoardOverlayPreview" type="TextureRect" parent="DuelArea/CenterBoardStack/BattleArea/BoardPanel"]
+visible = false
 layout_mode = 2
 mouse_filter = 2
 self_modulate = Color(0.8, 0.92, 1, 0.3)
@@ -410,16 +419,15 @@ texture = ExtResource("3_g01_board_overlay")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="BoardGrid" type="GridContainer" parent="DuelArea/CenterBoardStack/BattleArea/BoardPanel"]
+[node name="BoardGrid" type="Control" parent="DuelArea/CenterBoardStack/BattleArea/BoardPanel"]
+custom_minimum_size = Vector2(1510, 635)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/h_separation = 4
-theme_override_constants/v_separation = 4
-columns = 10
+clip_contents = true
 
 [node name="EnemyMasterPanel" type="PanelContainer" parent="DuelArea"]
-custom_minimum_size = Vector2(230, 0)
+custom_minimum_size = Vector2(212, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -427,11 +435,13 @@ size_flags_vertical = 3
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="EnemyPortrait" type="ColorRect" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
-custom_minimum_size = Vector2(0, 190)
+[node name="EnemyPortrait" type="TextureRect" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
+custom_minimum_size = Vector2(0, 198)
 layout_mode = 2
 size_flags_vertical = 3
-color = Color(0.5, 0.1, 0.15, 0.4)
+texture = ExtResource("6_enemy_master")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="EnemyPortraitLabel" type="Label" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyPortrait"]
 layout_mode = 1
@@ -464,7 +474,7 @@ vertical_alignment = 1
 clip_text = true
 
 [node name="EnemyHpContainer" type="HBoxContainer" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
-custom_minimum_size = Vector2(0, 36)
+custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 theme_override_constants/separation = 4
 
@@ -484,7 +494,7 @@ horizontal_alignment = 0
 vertical_alignment = 1
 
 [node name="EnemyStarRow" type="HBoxContainer" parent="DuelArea/EnemyMasterPanel/EnemyMasterLayout"]
-custom_minimum_size = Vector2(0, 28)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_constants/separation = 4
 
@@ -506,7 +516,7 @@ vertical_alignment = 1
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
-text = "部署区：红 8-10"
+text = "部署区：红色近端"
 horizontal_alignment = 0
 vertical_alignment = 1
 clip_text = true
@@ -520,14 +530,14 @@ anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 14.0
-offset_top = -194.0
+offset_top = -198.0
 offset_right = -14.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 12
 
 [node name="CardZonePanel" type="PanelContainer" parent="BottomHand"]
-custom_minimum_size = Vector2(300, 0)
+custom_minimum_size = Vector2(188, 0)
 layout_mode = 2
 
 [node name="CardZoneLayout" type="VBoxContainer" parent="BottomHand/CardZonePanel"]
@@ -586,7 +596,7 @@ alignment = 1
 theme_override_constants/separation = 12
 
 [node name="HeroScroll" type="ScrollContainer" parent="BottomHand/Controls"]
-custom_minimum_size = Vector2(760, 128)
+custom_minimum_size = Vector2(1060, 178)
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 2
@@ -612,7 +622,7 @@ layout_mode = 2
 text = "张角 (5)"
 
 [node name="AdvanceButton" type="Button" parent="BottomHand/Controls"]
-custom_minimum_size = Vector2(230, 112)
+custom_minimum_size = Vector2(164, 166)
 
 [node name="AdvanceIcon" type="Control" parent="BottomHand/Controls/AdvanceButton"]
 layout_mode = 1
@@ -620,8 +630,8 @@ anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 anchor_top = 0.0
-offset_top = 8.0
-offset_bottom = 0.0
+offset_top = 10.0
+offset_bottom = -72.0
 mouse_filter = 2
 script = ExtResource("4_uicon")
 icon = 9
@@ -632,15 +642,17 @@ layout_mode = 1
 anchors_preset = -1
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = 40.0
+offset_top = 44.0
+offset_bottom = -8.0
 mouse_filter = 2
-theme_override_font_sizes/font_size = 22
-text = "推进回合"
+theme_override_font_sizes/font_size = 30
+text = "推进
+回合"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="ResetButton" type="Button" parent="BottomHand/Controls"]
-custom_minimum_size = Vector2(128, 112)
+custom_minimum_size = Vector2(72, 58)
 
 [node name="ResetIcon" type="Control" parent="BottomHand/Controls/ResetButton"]
 layout_mode = 1

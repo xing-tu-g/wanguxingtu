@@ -1,6 +1,8 @@
 extends RefCounted
 class_name TargetingSystem
 
+const AttackShapeSystemScript: GDScript = preload("res://scripts/battle/AttackShapeSystem.gd")
+
 const SIDE_LEFT := "left"
 const SIDE_RIGHT := "right"
 const BOARD_LEFT_MASTER_COLUMN := 0
@@ -12,18 +14,9 @@ static func manhattan_distance(from_unit: Dictionary, to_unit: Dictionary) -> in
 
 
 static func select_target(attacker: Dictionary, enemy_units: Array, terrain_system = null) -> Dictionary:
-	var attack_range := get_attack_range(attacker, terrain_system)
-	var candidates: Array = []
-	for enemy: Dictionary in enemy_units:
-		if int(enemy.get("hp", 0)) > 0 and manhattan_distance(attacker, enemy) <= attack_range:
-			candidates.append(enemy)
-
+	var candidates: Array = AttackShapeSystemScript.select_basic_attack_targets(attacker, enemy_units, terrain_system)
 	if candidates.is_empty():
 		return {}
-
-	candidates.sort_custom(func(left_unit: Dictionary, right_unit: Dictionary) -> bool:
-		return _compare_target_priority(attacker, left_unit, right_unit)
-	)
 	return candidates[0]
 
 
@@ -41,32 +34,11 @@ static func can_attack_master(attacker: Dictionary, enemy_units: Array, terrain_
 
 
 static func get_attack_range(attacker: Dictionary, terrain_system = null) -> int:
-	var attack_range := int(attacker.get("range", 1))
-	if terrain_system != null:
-		attack_range += int(terrain_system.get_range_delta(attacker))
-	return maxi(0, attack_range)
+	return AttackShapeSystemScript.basic_attack_range(attacker, terrain_system)
 
 
 static func _compare_target_priority(attacker: Dictionary, left_unit: Dictionary, right_unit: Dictionary) -> bool:
-	var attacker_side := str(attacker.get("side", ""))
-	var left_column := int(left_unit.get("column", 0))
-	var right_column := int(right_unit.get("column", 0))
-	if left_column != right_column:
-		if attacker_side == SIDE_LEFT:
-			return left_column < right_column
-		return left_column > right_column
-
-	var left_hp := int(left_unit.get("hp", 0))
-	var right_hp := int(right_unit.get("hp", 0))
-	if left_hp != right_hp:
-		return left_hp < right_hp
-
-	var left_row := int(left_unit.get("row", 0))
-	var right_row := int(right_unit.get("row", 0))
-	if left_row != right_row:
-		return left_row < right_row
-
-	return int(left_unit.get("entry_order", 0)) < int(right_unit.get("entry_order", 0))
+	return AttackShapeSystemScript.compare_basic_attack_priority(attacker, left_unit, right_unit)
 
 
 static func _has_enemy_ahead(attacker: Dictionary, enemy_units: Array) -> bool:

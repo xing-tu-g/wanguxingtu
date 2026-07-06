@@ -1,81 +1,62 @@
-# 万古星图续接入口
+﻿# Current Update - Game Loop Construction Sprint v1
 
-只保留最近状态，避免长会话反复读取完整 `docs/HANDOFF.md`。
+- Current manifest: `tests/test_manifest_mvp.txt`, 94 tests.
+- Current game entry: `scenes/ui/MainMenuScene.tscn`.
+- Current loop: MainMenu -> DeckBuilder -> Battle -> BattleReport -> MainMenu.
+- Current sprint report: `docs/GAME_LOOP_CONSTRUCTION_2026-07-04.md`.
+- Current APK: uilds/wanguxingtu-game-loop-v1-debug.apk.
+- Live Battle HUD policy: battle logs are not shown during combat; they are kept as `battle_log_entries` data and rendered in `BattleReportScene`.
+- Verification targets:
+  - `MANIFEST_TEST_COUNT=94`
+  - `TEST_FILE_COUNT=94`
+  - `RUNNING_TEST_COUNT=94`
+  - `MVP_MANIFEST_CLEAN`
+- Latest focused checks:
+  - `m85_deck_screen_flow_check.gd`
+  - `m95_game_loop_construction_check.gd`
+  - `m7a_battle_log_check.gd`
+  - `m94_hud_information_architecture_check.gd`
+# 涓囧彜鏄熷浘缁帴鍏ュ彛
 
-## 当前状态
+鍙繚鐣欐渶杩戠姸鎬侊紝閬垮厤闀夸細璇濆弽澶嶈鍙栧畬鏁?`docs/HANDOFF.md`銆?
+## 褰撳墠鐘舵€?
+- 褰撳墠闃舵锛欳ombat Feel & Polish Sprint v1銆?- 褰撳墠鏈€楂樻垬鏂楄鑼冿細`docs/COMBAT_DESIGN_BIBLE.md`銆?- 褰撳墠鎶€鑳借鑼冿細`docs/SKILL_DESIGN_BIBLE.md`銆?- 褰撳墠鑻遍泟韬唤瑙勮寖锛歚docs/HERO_IDENTITY_BIBLE.md`銆?- 褰撳墠鎵嬪姩楠岃瘉鎶ュ憡锛歚docs/MANUAL_BATTLE_VALIDATION_2026-07-04.md`銆?- 褰撳墠鎴樻枟鎵嬫劅鎶ュ憡锛歚docs/COMBAT_FEEL_POLISH_2026-07-04.md`銆?- 褰撳墠闃佃惀鏄熷姏鎶ュ憡锛歚docs/FACTION_ENERGY_SYSTEM_2026-07-04.md`銆?- 褰撳墠涓荤嚎 manifest锛歚tests/test_manifest_mvp.txt`锛屽叡 91 椤规祴璇曘€?- 褰撳墠鍙瘯鐜?APK锛歚builds/wanguxingtu-battle-polish-v3-debug.apk`銆?- 褰撳墠妯℃嫙鍣ㄧ害瀹氾細姣忔浣跨敤鍚庢墽琛?`adb -s <serial> emu kill` 鍏抽棴銆?
+## 鏈樁娈靛凡瀹屾垚
 
-- 当前阶段：M85 战斗界面可视化升级完成。
-- 当前主线 manifest：`tests/test_manifest_mvp.txt`，共 76 项测试。
-- 当前可试玩 APK：`builds/wanguxingtu-debug.apk`（M85，含武将立绘）。
-- 当前模拟器：AVD `wanguxingtu_phone`，需 `-gpu host` 启动（SwiftShader 不支持 Godot 4.7 gl_compatibility）。
+- 涓?55 鍚嶅彲鐜╂灏嗗缓绔嬩竴鍙ヨ瘽瀹氫綅銆佹牳蹇冪帺娉曞拰鎴樻枟鏍囩锛?  - `docs/HERO_IDENTITY_BIBLE.md`
+- 鎷嗚В閲嶅鎶€鑳芥ā鏉匡紝褰撳墠瀹屾暣鎶€鑳界鍚嶉噸澶嶇粍涓?0锛?  - 鎴樺＋鑷姞鏀绘ā鏉挎媶鎴愭満鍔ㄣ€佺湡浼ゃ€佹垚闀裤€佹姢鐩俱€佺湬鏅曘€佺紦閫熴€佹寚鎸ョ瓑鏂瑰悜銆?  - 鍛戒腑鐕冪儳妯℃澘鎷嗘垚鐙欏嚮鐪熶激銆佸叏鍐涙満鍔ㄣ€佽疮鐭㈢湡浼ゃ€侀暱鏈熸瘨鐏€?  - 閮ㄧ讲鍓婃敾妯℃澘鎷嗘垚鍘嬪埗銆侀暱鏁堢闂淬€佸弸鍐涘姞鏀汇€佽嚜韬弽鏀汇€佺櫥鍦烘垚闀裤€?  - 鍧﹀厠鎶ょ浘妯℃澘鎷嗘垚鍥炲悎鐩俱€侀暱鏁堢浘銆侀珮鐩俱€侀儴缃茬浘銆佺敓鍛芥垚闀裤€?  - 娌荤枟/鏀彺妯℃澘鎷嗘垚鍗曚綋娌荤枟銆侀暱鏁堝姞鏀汇€佸叏浣撴不鐤椼€佺煭鏁堟壎鎸併€佺浉閭绘不鐤椼€?- 鏂板 100 灞€鑻遍泟韬唤妯℃嫙锛?  - `scripts/tools/HeroIdentitySimulationV1.gd`
+  - `scripts/tools/run_hero_identity_simulation_v1.gd`
+  - 鎶ュ憡锛歚tmp/hero_identity/hero_identity_simulation_v1_100.json`
+- 鏂板鑻遍泟韬唤鍥炲綊娴嬭瘯锛?  - `tests/m91_hero_identity_check.gd`
+- 鏂板 Manual Battle Test Mode锛?  - `BattleScreen.set_screen_data()` 鏀寔 `manual_battle_test_mode=true`銆?  - Manual 妯″紡鏄剧ず `ManualValidationPanel`锛屽疄鏃跺睍绀哄洖鍚堛€佹槦鍔涖€佸凡閮ㄧ讲姝﹀皢銆佹妧鑳借Е鍙戙€佷激瀹炽€佹壙浼ゃ€佹不鐤椼€佸嚮鏉€銆侀樀钀ユ槦鍔涖€?  - Manual 妯″紡鏄剧ず鈥滈噸寮€鈥濇寜閽紱姝ｅ紡妯″紡浠嶉殣钘忛噸缃叆鍙ｃ€?- 鏂板鎵嬪姩绔欎綅楠岃瘉宸ュ叿锛?  - `scripts/tools/ManualBattleValidationV1.gd`
+  - `scripts/tools/run_manual_battle_validation_v1.gd`
+  - 鎶ュ憡锛歚tmp/manual_validation/manual_battle_validation_v1.json`
+  - 鏂囨。锛歚docs/MANUAL_BATTLE_VALIDATION_2026-07-04.md`
+- 鏂板鎵嬪姩楠岃瘉鍥炲綊娴嬭瘯锛?  - `tests/m92_manual_battle_validation_check.gd`
+- 鏂板 Combat Feel & Polish v1 琛ㄧ幇灞傚己鍖栵細
+  - 鎵€鏈夋垚鍔熸妧鑳借Е鍙戦兘浼氭樉绀烘妧鑳藉悕妯箙鍜岃交閲忓崰浣?FX銆?  - 閮ㄧ讲銆佹槦鍔涘彉鍖栥€侀樀钀ヤ骇鏄熴€佷富灏嗗彈浼ゃ€佸崟浣嶆浜″鍔犳诞灞?闇囧姩/鎻愮ず銆?  - 椤堕儴鐘舵€佹樉绀轰笅娆℃槦鍔涖€佹槦娼€掕鏃舵垨涓诲皢浼ゅ鍔犳垚銆佸墠涓悗鏈熻妭濂忔彁绀恒€?  - 涓嶄慨鏀?`BattleState.gd`銆乣TurnController.gd`銆乣AttackShapeSystem.gd`銆乣FactionEnergySystem.gd`銆乣data/heroes.json`銆乣data/skills.json`銆?- 鏂板鎵嬫劅鍥炲綊娴嬭瘯锛?  - `tests/m93_combat_feel_polish_check.gd`
 
-## P0 架构清理（已完成）
-
-- `project.godot` 注册 EventBus / AppState / SaveService / SoundManager 四个 Autoload。
-- `EventBus.gd` 从 1 个信号扩展到 14 个类型化信号，覆盖战斗全流程。
-- 删除空文件死代码：`BattleController.gd`、`BattleRules.gd`、`CardPiles.gd`（含 .uid）。
-- 静态类型加固：`TurnController`、`BattleState`、`BattleDeck`、`BattleScreen`、`BattleStats`、`AppState` 全部零未类型化成员变量。
-
-## P1 功能补全（已完成）
-
-- EventBus 信号接入战斗流程：`TurnController` emit `side_turn_started`/`side_turn_ended`/`turn_completed`；`BattleState` emit `unit_deployed`/`unit_attacked`/`unit_damaged`/`unit_died`/`master_damaged`/`star_power_changed`；`MovementSystem` emit `unit_moved`；`BattleScreen` emit `battle_started`/`battle_ended`。
-- `SaveService.gd` 完整实现：7 个方法（`create_default_save`/`has_save`/`load_game`/`save_game`/`delete_save`/`build_save_from_appState`/`apply_save_to_appState`）。
-- `HomeScreen.gd` 新增"继续游戏"按钮（仅存档存在时显示）。
-- `BattleScreen.gd` 战斗结束时自动存档 + emit `battle_ended`。
-
-## P2 内容扩展（已完成）
-
-- 新增 8 位武将（黄忠/郭嘉/典韦/荀彧/董卓/貂蝉/公孙瓒/华雄），武将池 13→21。
-- `skills.json` 新增 8 个技能定义，`SkillSystem` 扩展 `adjacent_modify` 效果类型。
-- `strategy_cards.json` 全中文化。
-- `BattleAnimator.gd` 信号驱动战斗动画（攻击闪红/移动闪蓝/部署闪绿/死亡深红 Tween）。
-- `tests/m79_batch2_heroes_check.gd` 覆盖 8 武将 + 3 策略卡验证。
-
-## P3 体验打磨（已完成）
-
-- `SoundManager.gd` 信号驱动程序化音效，零 `_process()` 轮询，8 池 AudioStreamPlayer。
-- `AppState.gd` 添加经济系统（gold/star_stone/battles_fought + earn/record/snapshot）。
-- `HomeScreen.gd` 首页显示奕星师等级/星石/金币/战斗次数。
-- `ResultScreen.gd` 结算显示战利品，胜利获 50+ 金币和 1 星石，失败获保底。
-- `SaveService` 存档/读档同步 economy 数据。
-- 数值平衡微调：黄忠 ATK 5→4，貂蝉 cost 5→4，公孙瓒 cost 3→4。
-
-## 常用命令
+## 褰撳墠楠岃瘉
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/check_test_manifest.ps1
-powershell -ExecutionPolicy Bypass -File scripts/run_mvp_manifest_tests.ps1
-powershell -ExecutionPolicy Bypass -File scripts/android_smoke_capture.ps1
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://scripts/tools/run_hero_identity_simulation_v1.gd
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://scripts/tools/run_manual_battle_validation_v1.gd
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://tests/m91_hero_identity_check.gd
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://tests/m92_manual_battle_validation_check.gd
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://tests/m93_combat_feel_polish_check.gd
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://tests/m88_hero_skill_completion_check.gd
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://tests/m89_balance_gameplay_consolidation_check.gd
+godot.cmd --headless --path D:\wanguxingtu --disable-crash-handler --script res://tests/m90_faction_energy_system_check.gd
+powershell -ExecutionPolicy Bypass -File scripts/run_mvp_manifest_tests.ps1 -GodotBin godot.cmd
+powershell -ExecutionPolicy Bypass -File scripts/android_smoke_capture.ps1 -ApkPath builds\wanguxingtu-battle-polish-v3-debug.apk
 ```
 
-## M83-M85: Android 调试 + 战斗界面可视化（已完成）
+褰撳墠宸茬‘璁わ細
 
-- **M83**: 定位模拟器黑屏根因（SwiftShader GLES 3.0 uniform 向量不足），修复为 `-gpu host` 模式。
-- **M84**: 修复 EventBus Autoload 访问——`Engine.get_singleton()` 在 Android 运行时失效，全部改为 `get_node("/root/EventBus")`。SaveService 静态方法改用 `Engine.get_main_loop().root.get_node_or_null()`。修复 SoundManager `play()` 时序。
-- **M85**: `BattleBoardView.gd` 重构——每格增加 TextureRect 武将立绘 + HP overlay Label + 部署区/公共区域三色着色。21 武将中 19 位有对应立绘。
+- Hero Identity Simulation v1锛歚HERO_IDENTITY_SAMPLE_COUNT=100` / `HERO_IDENTITY_ENDED_COUNT=100` / `HERO_IDENTITY_TIMEOUTS=0`銆?- 韬唤閲嶅妫€鏌ワ細`HERO_IDENTITY_DUPLICATE_SIGNATURE_GROUPS=0`銆?- 鎶€鑳藉瓨鍦ㄦ劅妫€鏌ワ細`HERO_IDENTITY_UNTRIGGERED_SKILLS=0`銆?- `m91_hero_identity_check.gd` 閫氳繃銆?- `m88_hero_skill_completion_check.gd` 閫氳繃銆?- Manual Battle Validation v1锛?5 涓満鏅紝5 鍚嶄綆瀛樺湪鎰熻嫳闆?脳 3 绉嶇珯浣嶏紝`MANUAL_BATTLE_VALIDATION_V1_CLEAN`銆?- 缁撹锛氳档浜戙€佸崕闆勩€侀┈瓒呭睘浜庤嚜鍔ㄦā鎷熶綆浼帮紱寰愮洓銆佸紶椋為渶瑕佹洿娓呮櫚鐨勭珯浣?鎶€鑳借鏄庯紝鏆備笉鏀规暟鍊笺€?- Combat Feel Polish v1锛歚m93_combat_feel_polish_check.gd` 閫氳繃銆?- Manifest 鍚屾锛歚MANIFEST_TEST_COUNT=91` / `TEST_FILE_COUNT=91` / `TEST_MANIFEST_SYNC_CLEAN`銆?- 鍏ㄩ噺涓荤嚎鍥炲綊閫氳繃鐩爣锛歚RUNNING_TEST_COUNT=91` / `MVP_MANIFEST_CLEAN`銆?- 鎶ュ憡锛歚tmp/hero_identity/hero_identity_simulation_v1_100.json`銆?
+## 涓嬩竴姝ュ缓璁?
+1. 鐢ㄦā鎷熷櫒瀹炴満楠岃瘉 Combat Feel锛氱湅鏄熷姏娴眰銆佹妧鑳芥í骞呫€佺牬闃靛弽棣堟槸鍚﹁繃瀵嗘垨閬尅妫嬬洏銆?2. 濡傛灉鍙嶉鑺傚杩囧己锛屼紭鍏堣皟鍔ㄧ敾鏃堕暱/閫忔槑搴︼紝涓嶆敼瑙勫垯銆?3. 鍚庣画鍙敤姝ｅ紡 FX 璧勬簮鏇挎崲褰撳墠杩愯鏃跺崰浣嶈壊鍧椼€?
 
-## 最近验证
 
-- Manifest 同步：当前 `MANIFEST_TEST_COUNT=76` / `TEST_FILE_COUNT=76`。
-- UI 优化验证：**8/8 测试全部通过**（headless --script），headless 启动零错误。
-- APK 导出：成功（183MB，`builds/wanguxingtu-debug.apk`）。
-- 模拟器烟测：启动正常、进入战斗正常、零 ERROR、立绘显示正确。
-- 模拟器启动命令：`emulator -avd wanguxingtu_phone -gpu host -no-audio`
 
-## UI 优化验证 + 遗留修复（已完成 M86）
-
-- **3 个遗留问题全部修复**：
-  1. `status_label`/`turn_info_label` 同节点 → 移除冗余 `turn_info_label`
-  2. `unit_detail_body` 路径缺 `DetailLayout` → 补全 `DetailLayout/` 中间层
-  3. `M6c` 测试 `Script.new()` 无场景树 → 重写为 `.tscn` 实例化
-  4. `M41` 测试文本断言未适配 M85 → 改为背景色 + 子节点检查
-- 涉及文件：`BattleScreen.gd`（2 处修复）、`tests/m6c_result_flow_check.gd`（重写）、`tests/m41_board_visual_refinement_check.gd`（重写）
-- 完整报告：`docs/ui_optimization_verification_report.md`
-
-## 下一步建议
-
-1. 为郭嘉制作立绘，补全 21 武将全部有图。
-2. 替换 SoundManager 程序化音效为真实音频素材。
-3. 增强敌方 AI：增加第二名对手的部署策略差异。
-4. Q版美术全面接入（tupian/ 中还有大量 UI 素材未使用）。
-5. 在 Godot Editor 中做完整交互测试。

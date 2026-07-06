@@ -15,6 +15,7 @@ func _init() -> void:
 	_check_master_panel_backplates(screen, failures)
 	_check_hand_card_density(screen, failures)
 	_check_board_shape(screen, failures)
+	_check_formal_battle_ui(screen, failures)
 
 	screen.queue_free()
 	if failures.is_empty():
@@ -28,29 +29,23 @@ func _init() -> void:
 
 
 func _check_background_readability(screen: Control, failures: Array[String]) -> void:
-	_expect(screen.background_readability_wash.color.a >= 0.56, "main readability wash is stronger than M66", failures)
-	_expect(screen.has_node("Background/TopReadabilityWash"), "top local readability wash exists", failures)
-	_expect(screen.has_node("Background/BattleReadabilityWash"), "battle area local readability wash exists", failures)
-	var top_wash: ColorRect = screen.get_node("Background/TopReadabilityWash")
-	var battle_wash: ColorRect = screen.get_node("Background/BattleReadabilityWash")
-	_expect(top_wash.color.a >= 0.16 and top_wash.color.a <= 0.28, "top wash darkens text zone without killing art", failures)
-	_expect(battle_wash.color.a >= 0.08 and battle_wash.color.a <= 0.18, "board wash is present but restrained", failures)
-
-	for dot_name in ["StarDotA", "StarDotB", "StarDotC", "StarDotD", "StarDotE"]:
-		var dot: ColorRect = screen.get_node("Background/StarDots/%s" % dot_name)
-		_expect(dot.color.a <= 0.34, "%s alpha is subdued" % dot_name, failures)
-
-	var blue_orbit: Line2D = screen.get_node("Background/StarOrbitBlue")
-	var gold_orbit: Line2D = screen.get_node("Background/StarOrbitGold")
-	_expect(blue_orbit.default_color.a <= 0.12, "blue star orbit alpha is lower than M66", failures)
-	_expect(gold_orbit.default_color.a <= 0.10, "gold star orbit alpha is lower than M66", failures)
-	_expect(blue_orbit.width <= 2.0 and gold_orbit.width <= 1.5, "star orbit strokes are thinner", failures)
+	_expect(screen.background_readability_wash.color.a > 0.0 and screen.background_readability_wash.color.a <= 0.24, "main readability wash preserves visible battle art", failures)
+	_expect(screen.battle_background_image != null, "battle background image exists", failures)
+	_expect(screen.battle_background_image.mouse_filter == Control.MOUSE_FILTER_IGNORE, "background image ignores input", failures)
 
 
 func _check_master_panel_backplates(screen: Control, failures: Array[String]) -> void:
 	var player_style := screen.player_master_panel.get_theme_stylebox("panel") as StyleBoxFlat
 	var enemy_style := screen.enemy_master_panel.get_theme_stylebox("panel") as StyleBoxFlat
+	var player_portrait := screen.get_node("DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerPortrait") as TextureRect
+	var enemy_portrait := screen.get_node("DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyPortrait") as TextureRect
 	_expect(player_style != null and enemy_style != null, "master panel styleboxes are applied", failures)
+	_expect(player_portrait != null and player_portrait.texture != null, "player master uses portrait art instead of flat placeholder", failures)
+	_expect(enemy_portrait != null and enemy_portrait.texture != null, "enemy master uses portrait art", failures)
+	if player_portrait != null and player_portrait.texture != null:
+		_expect(player_portrait.texture.resource_path.ends_with("C01_player_astrologer.png"), "player master portrait uses C01 asset", failures)
+	if enemy_portrait != null and enemy_portrait.texture != null:
+		_expect(enemy_portrait.texture.resource_path.ends_with("C02_enemy_astrologer.png"), "enemy master portrait uses C02 asset", failures)
 	if player_style == null or enemy_style == null:
 		return
 	_expect(player_style.bg_color.a >= 0.95, "player master panel has stronger backplate opacity", failures)
@@ -63,19 +58,49 @@ func _check_master_panel_backplates(screen: Control, failures: Array[String]) ->
 func _check_hand_card_density(screen: Control, failures: Array[String]) -> void:
 	screen._update_hero_buttons()
 	await process_frame
+	var tray_backplate := screen.get_node_or_null("BottomHand/Controls/HeroScroll/HandTrayBackplate") as TextureRect
+	_expect(tray_backplate != null and tray_backplate.texture != null, "hand tray uses explicit texture backplate", failures)
+	if tray_backplate != null and tray_backplate.texture != null:
+		_expect(tray_backplate.texture.resource_path.ends_with("hand_card_button_bg.png"), "hand tray backplate uses hand card art asset", failures)
+		_expect(tray_backplate.material is ShaderMaterial, "hand tray masks non-transparent source background", failures)
 	var zhouyu_button: Button = screen.hero_buttons["zhouyu"]
-	var text := str(zhouyu_button.text)
+	var text := str(zhouyu_button.get_node("HandCardContainer/TopRow/NameLabel").text)
 	_expect(_contains_any(text, ["周瑜", "Zhou Yu"]), "hand card keeps hero name", failures)
-	_expect(text.contains("5"), "hand card keeps cost value", failures)
-	_expect(not text.contains("faction"), "hand card does not spend space on faction label prefix", failures)
-	_expect(text.length() >= 8 and text.length() <= 80, "hand card keeps concise state text", failures)
-	_expect(not _contains_long_card_copy(text), "hand card hides long descriptions, class words, and blood bars", failures)
-	_expect(zhouyu_button.custom_minimum_size.y <= 116.0, "hand card height stays compact after text trim", failures)
+	_expect(str(zhouyu_button.get_node("HandCardContainer/TopRow/CostLabel").text).contains("5"), "hand card keeps cost value", failures)
+	_expect(zhouyu_button.get_node_or_null("HandCardContainer/Portrait") != null, "hand card has portrait slot", failures)
+	_expect(str(zhouyu_button.get_node("HandCardContainer/MetaLabel").text).length() > 0, "hand card shows faction and class meta", failures)
+	_expect(zhouyu_button.custom_minimum_size.y >= 150.0, "hand card uses vertical card proportions", failures)
+	var card_style := zhouyu_button.get_theme_stylebox("normal") as StyleBoxTexture
+	_expect(card_style != null and card_style.texture != null, "hand card uses texture background style", failures)
+	if card_style != null and card_style.texture != null:
+		_expect(card_style.texture.resource_path.ends_with("hand_card_button_bg.png"), "hand card uses battle hand art asset", failures)
 
 
 func _check_board_shape(screen: Control, failures: Array[String]) -> void:
-	_expect(screen.grid.columns == BoardModelScript.COLUMNS, "board grid still has 10 columns", failures)
-	_expect(screen.grid.get_child_count() == BoardModelScript.COLUMNS * BoardModelScript.ROWS, "board grid still has 10x5 cells", failures)
+	_expect(not (screen.grid is GridContainer), "board grid is not forced into 10 columns", failures)
+	_expect(screen.cell_buttons.size() == BoardModelScript.get_total_cell_count(), "board model keeps 47 playable offset cells", failures)
+	_expect(screen.cell_buttons.has("9,1"), "row 1 keeps ninth cell", failures)
+	_expect(not screen.cell_buttons.has("10,1"), "row 1 has no phantom tenth cell", failures)
+	_expect(screen.cell_buttons.has("10,2"), "row 2 keeps tenth cell", failures)
+
+
+func _check_formal_battle_ui(screen: Control, failures: Array[String]) -> void:
+	_expect(screen.has_node("BottomHand/Controls/HeroScroll/HeroButtons/NextDrawSlot"), "hand row exposes next auto draw slot", failures)
+	_expect(not screen.tutorial_progress_row.visible, "debug tutorial progress row is hidden", failures)
+	_expect(screen.first_deploy_hint_panel.custom_minimum_size.y <= 80.0, "first deploy hint is a low hint bar", failures)
+	_expect(screen.first_deploy_hint_panel.offset_bottom <= -190.0, "first deploy hint stays above hand without covering board center", failures)
+	var advance_text := screen.advance_turn_button.get_node_or_null("AdvanceText") as Label
+	_expect(advance_text != null and advance_text.text.contains("推进"), "main action button reads as advance turn", failures)
+	_expect(screen.advance_turn_button.custom_minimum_size.y >= 160.0, "main action button is visually dominant", failures)
+	_expect(screen.get_node("BottomHand/Controls/ResetButton").custom_minimum_size.y <= 80.0, "reset is a secondary small action", failures)
+	_expect(screen.battle_background_image.texture.resource_path.ends_with("battle_background.png"), "battle screen uses new battle background asset", failures)
+	_expect(not screen.toggle_log_button.visible, "battle report/log entry is not visible during battle", failures)
+	for path in ["TopBar/BackButton", "BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader/CardZoneToggleButton", "BottomHand/Controls/ResetButton", "FirstDeployHintPanel/HintMargin/HintLayout/HintFooter/FirstDeployHintButton"]:
+		var button := screen.get_node(path) as Button
+		var style := button.get_theme_stylebox("normal") as StyleBoxTexture
+		_expect(style != null and style.texture != null, "%s uses battle art texture style" % path, failures)
+		if style != null and style.texture != null:
+			_expect(style.texture.resource_path.ends_with("hand_card_button_bg.png"), "%s uses shared battle button art" % path, failures)
 
 
 func _contains_long_card_copy(text: String) -> bool:

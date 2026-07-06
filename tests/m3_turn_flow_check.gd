@@ -1,4 +1,4 @@
-extends SceneTree
+﻿extends SceneTree
 
 const BattleStateScript: GDScript = preload("res://scripts/battle/BattleState.gd")
 const TurnControllerScript: GDScript = preload("res://scripts/battle/TurnController.gd")
@@ -110,9 +110,10 @@ func _add_unit(state, unit_id: String, side: String, column: int, row: int, over
 	for key in overrides:
 		unit_data[key] = overrides[key]
 	var result: Dictionary = state.create_unit_instance(unit_data, side, column, row)
-	return result.unit
+	return result.get("unit", {})
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:
 	if not condition:
 		failures.append("FAIL: %s" % message)
+

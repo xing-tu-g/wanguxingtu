@@ -1,4 +1,4 @@
-extends Control
+﻿extends Control
 
 const BoardModelScript: GDScript = preload("res://scripts/battle/BoardModel.gd")
 const BattleStateScript: GDScript = preload("res://scripts/battle/BattleState.gd")
@@ -6,30 +6,32 @@ const MovementSystemScript: GDScript = preload("res://scripts/battle/MovementSys
 const TerrainSystemScript: GDScript = preload("res://scripts/battle/TerrainSystem.gd")
 const TurnControllerScript: GDScript = preload("res://scripts/battle/TurnController.gd")
 const BattleDeckScript: GDScript = preload("res://scripts/battle/BattleDeck.gd")
+const HeroDataLoaderScript: GDScript = preload("res://scripts/data/HeroDataLoader.gd")
 const SaveServiceScript: GDScript = preload("res://scripts/core/SaveService.gd")
 const BattleBoardViewScript: GDScript = preload("res://scripts/ui/BattleBoardView.gd")
 const BattleTutorialViewScript: GDScript = preload("res://scripts/ui/BattleTutorialView.gd")
 const BattleAnimatorScript: GDScript = preload("res://scripts/ui/BattleAnimator.gd")
 const StarPaletteScript: GDScript = preload("res://scripts/ui/theme/ColorPalette.gd")
+const BattleUIThemeScript: GDScript = preload("res://scripts/ui/theme/BattleUITheme.gd")
+const BattleUIAssetsScript: GDScript = preload("res://scripts/ui/theme/BattleUIAssets.gd")
 const FontScaleScript: GDScript = preload("res://scripts/ui/theme/FontScale.gd")
+const WHITE_KEY_ALPHA_SHADER: Shader = preload("res://assets/shaders/white_key_alpha.gdshader")
 
-# ── ShaderMaterial preloads (T3-3) — 消除代码中 ShaderMaterial.new()
+# 鈹€鈹€ ShaderMaterial preloads (T3-3) 鈥?娑堥櫎浠ｇ爜涓?ShaderMaterial.new()
 const MAT_GLOW_PLAYER: ShaderMaterial = preload("res://assets/shaders/materials/glow_pulse_player.tres")
 const MAT_GLOW_ENEMY: ShaderMaterial = preload("res://assets/shaders/materials/glow_pulse_enemy.tres")
 const MAT_DEPTH_FADE_BATTLE: ShaderMaterial = preload("res://assets/shaders/materials/depth_fade_battle.tres")
 
-# ── Theme preload (T3-2)
+# 鈹€鈹€ Theme preload (T3-2)
 const THEME_DEFAULT: Theme = preload("res://assets/theme/default_theme.tres")
 
-const HOME_SCREEN := "res://scenes/ui/HomeScreen.tscn"
-const RESULT_SCREEN := "res://scenes/ui/ResultScreen.tscn"
-const DEBUG_HERO_IDS := ["guanyu", "zhouyu", "zhangjiao", "zhaoyun", "zhangfei", "sunshangxiang"]
-const ENEMY_AUTO_HERO_IDS := ["zhouyu", "guanyu", "zhaoyun", "zhangfei", "sunshangxiang", "zhangjiao"]
-const STARTING_PLAYER_DECK := DEBUG_HERO_IDS
-const STARTING_ENEMY_DECK := ENEMY_AUTO_HERO_IDS
-const STARTING_HAND_SIZE := 3
+const HOME_SCREEN := "res://scenes/ui/MainMenuScene.tscn"
+const RESULT_SCREEN := "res://scenes/ui/BattleReportScene.tscn"
+const STARTING_HAND_SIZE := 5
 const DRAW_PER_SIDE_TURN := 1
-const RECYCLE_DISCARD_ON_EMPTY := true
+const RECYCLE_DISCARD_ON_EMPTY := false
+const DEBUG_BATTLE_UI := false
+const SHOW_BATTLE_LOG_IN_BATTLE := false
 const MAX_LOG_LINES := 20
 const MAX_LOG_RESULT_CHARS := 44
 const DEPLOY_FAILURE_TOAST_DURATION := 2.8
@@ -37,7 +39,7 @@ const DEPLOY_FAILURE_TOAST_FADE_DURATION := 0.8
 const REASON_TEXT := {
 	"cell_out_of_bounds": "格子超出棋盘",
 	"not_deployment_zone": "只能部署在己方蓝色区域",
-	"not_own_deployment_zone": "只能部署在己方前三列",
+	"not_own_deployment_zone": "只能部署在己方蓝色近端星格",
 	"cell_occupied": "目标格已有单位",
 	"unknown_hero": "未知武将",
 	"not_enough_star_power": "星力不足",
@@ -45,6 +47,10 @@ const REASON_TEXT := {
 }
 const STATUS_TEXT := {
 	"burn": "燃烧",
+	"shield": "护盾",
+	"stun": "眩晕",
+	"attack_buff": "增攻",
+	"slow": "减速",
 }
 
 var battle_state: BattleState = BattleStateScript.new()
@@ -57,6 +63,7 @@ var battle_tutorial_view: BattleTutorialView = BattleTutorialViewScript.new()
 var battle_animator: BattleAnimator
 var cell_buttons: Dictionary = {}
 var selected_hero_id: String = "guanyu"
+var selected_hand_index: int = -1
 var player_deck: Array = []
 var enemy_deck: Array = []
 var configured_player_deck: Array = []
@@ -77,24 +84,29 @@ var deploy_failure_highlight_active: bool = false
 var tutorial_turn_advanced: bool = false
 var deploy_failure_toast_time_left: float = 0.0
 var _battle_started_emitted: bool = false
+var manual_battle_test_mode: bool = false
+var manual_battle_test_name: String = ""
+var manual_validation_panel: PanelContainer
+var manual_validation_label: RichTextLabel
 
 @onready var grid: Control = $DuelArea/CenterBoardStack/BattleArea/BoardPanel/BoardGrid
 @onready var battle_background_image: TextureRect = $Background/BattleBackgroundImage
 @onready var background_readability_wash: ColorRect = $Background/BackgroundReadabilityWash
 @onready var board_overlay_preview: TextureRect = $DuelArea/CenterBoardStack/BattleArea/BoardPanel/BoardOverlayPreview
 @onready var status_label: Label = $TopBar/StatusPanel/StatusMargin/StatusRow/TopRow/TurnLabel
+@onready var star_label: Label = $TopBar/StatusPanel/StatusMargin/StatusRow/TopRow/StarLabel
 @onready var tutorial_progress_row: HBoxContainer = $TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow
 @onready var tutorial_progress_label: Label = $TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/TutorialTitle
 @onready var tutorial_step_select_label: Label = $TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step1Panel/Step1Inner/Step1Label
 @onready var tutorial_step_deploy_label: Label = $TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step2Panel/Step2Inner/Step2Label
 @onready var tutorial_step_turn_label: Label = $TopBar/StatusPanel/StatusMargin/StatusRow/TutorialRow/Step3Panel/Step3Inner/Step3Label
 @onready var turn_info_panel: PanelContainer = $TopBar/StatusPanel
-# turn_info_label 已移除 — star_label 在第 698 行已显示回合信息，status_label(TurnLabel) 负责战斗中状态提示
-@onready var star_label: Label = $TopBar/StatusPanel/StatusMargin/StatusRow/TopRow/StarLabel
 @onready var player_hud_label: Label = $DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerHpContainer/PlayerHpLabel
 @onready var enemy_hud_label: Label = $DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyHpContainer/EnemyHpLabel
 @onready var player_master_panel: PanelContainer = $DuelArea/PlayerMasterPanel
 @onready var enemy_master_panel: PanelContainer = $DuelArea/EnemyMasterPanel
+@onready var player_star_label: Label = $DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerStarRow/PlayerStarLabel
+@onready var enemy_star_label: Label = $DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyStarRow/EnemyStarLabel
 @onready var card_zone_label: Label = $BottomHand/CardZonePanel/CardZoneLabel
 @onready var card_zone_toggle_button: Button = $BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader/CardZoneToggleButton
 @onready var card_zone_summary_label: Label = $BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader/CardZoneSummaryLabel
@@ -121,16 +133,22 @@ var _battle_started_emitted: bool = false
 @onready var _app_state: Node = get_node("/root/AppState")
 var hero_buttons: Dictionary = {}
 
-# ── StyleBoxFlat 缓存池 — 消除 per-frame GC ──
+# 鈹€鈹€ StyleBoxFlat 缂撳瓨姹?鈥?娑堥櫎 per-frame GC 鈹€鈹€
 var _advance_style: StyleBoxFlat
-var _hero_button_styles: Dictionary = {}  # hero_id → StyleBoxFlat
-var _panel_styles: Dictionary = {}  # node_name → StyleBoxFlat
+var _hero_button_styles: Dictionary = {}  # hero_id -> StyleBoxTexture
+var _panel_styles: Dictionary = {}  # node_name 鈫?StyleBoxFlat
 var _master_panel_player_active: StyleBoxFlat
 var _master_panel_player_inactive: StyleBoxFlat
 var _master_panel_enemy_active: StyleBoxFlat
 var _master_panel_enemy_inactive: StyleBoxFlat
 var _overlay_button_style: StyleBoxFlat
-# ── Shader 材质 — 预加载 .tres 引用，运行时直接指派 ──
+var _top_button_style: StyleBoxTexture
+var _top_button_hover_style: StyleBoxTexture
+var _secondary_button_style: StyleBoxTexture
+var _secondary_button_hover_style: StyleBoxTexture
+var _hint_button_style: StyleBoxTexture
+var _white_key_material: ShaderMaterial
+# 鈹€鈹€ Shader 鏉愯川 鈥?棰勫姞杞?.tres 寮曠敤锛岃繍琛屾椂鐩存帴鎸囨淳 鈹€鈹€
 var _shader_glow_active: ShaderMaterial = MAT_GLOW_PLAYER
 var _shader_glow_active_enemy: ShaderMaterial = MAT_GLOW_ENEMY
 
@@ -143,6 +161,7 @@ func _ready() -> void:
 	$BottomHand/Controls/ResetButton.pressed.connect(_reset_debug_battle)
 	$BottomHand/Controls/AdvanceButton.pressed.connect(_advance_turn)
 	_build_style_caches()
+	_apply_battle_ui_layout()
 	_create_view_nodes()
 	_initialize_card_piles()
 	_build_hero_buttons()
@@ -150,6 +169,7 @@ func _ready() -> void:
 	_initialize_card_zone_view()
 	_initialize_battle_board_view()
 	_initialize_battle_tutorial_view()
+	_create_manual_validation_panel()
 	_apply_visual_placeholder_theme()
 	_apply_font_scale()
 	_apply_depth_fade()
@@ -158,38 +178,136 @@ func _ready() -> void:
 	_build_board()
 	_refresh_board()
 	_initialize_battle_animator()
-	_update_status("选择武将后，点击左侧部署区格子。下一步：点击「我方行动」推进回合。")
+	_update_status("选择武将，点击蓝色近端星格部署。上阵后将自动补充下一张卡牌。")
 	_update_log_visibility()
 	_update_first_deploy_hint()
 	_emit_battle_started()
 
 
+func _apply_battle_ui_layout() -> void:
+	battle_background_image.texture = BattleUIAssetsScript.background_texture()
+	background_readability_wash.color = BattleUIThemeScript.BG_WASH
+	player_master_panel.custom_minimum_size = Vector2(212, 0)
+	enemy_master_panel.custom_minimum_size = Vector2(212, 0)
+	$DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerPortrait.custom_minimum_size = Vector2(0, 198)
+	$DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyPortrait.custom_minimum_size = Vector2(0, 198)
+	$TopBar/BackButton/BackText.text = "返回"
+	$TopBar/Title.text = "星图对弈"
+	$TopBar/LogButton/LogText.text = "战报"
+	$TopBar/LogButton.visible = SHOW_BATTLE_LOG_IN_BATTLE
+	$TopBar/LogButton.disabled = not SHOW_BATTLE_LOG_IN_BATTLE
+	status_label.custom_minimum_size = Vector2(260, 0)
+	status_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	status_label.clip_text = true
+	star_label.custom_minimum_size = Vector2(520, 0)
+	star_label.clip_text = true
+	tutorial_progress_row.visible = false
+	$DuelArea/CenterBoardStack/ZoneBar.visible = false
+	$DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerDeployBadge.visible = false
+	$DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyDeployBadge.visible = false
+	$DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerNameRow/PlayerTitleLabel.text = "青曜弈星师"
+	$DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyNameRow/EnemyTitleLabel.text = "玄曜弈星师"
+	var player_portrait := $DuelArea/PlayerMasterPanel/PlayerMasterLayout/PlayerPortrait
+	if player_portrait is TextureRect:
+		var portrait_rect := player_portrait as TextureRect
+		portrait_rect.texture = BattleUIAssetsScript.master_texture(BoardModelScript.SIDE_LEFT)
+		portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	var player_portrait_label := player_portrait.get_node_or_null("PlayerPortraitLabel") as Label
+	if player_portrait_label != null:
+		player_portrait_label.text = ""
+		player_portrait_label.add_theme_color_override("font_color", BattleUIThemeScript.TEXT_MAIN)
+	var enemy_portrait := $DuelArea/EnemyMasterPanel/EnemyMasterLayout/EnemyPortrait as TextureRect
+	if enemy_portrait != null:
+		enemy_portrait.texture = BattleUIAssetsScript.master_texture(BoardModelScript.SIDE_RIGHT)
+		enemy_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		enemy_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	var enemy_portrait_label := enemy_portrait.get_node_or_null("EnemyPortraitLabel") as Label if enemy_portrait != null else null
+	if enemy_portrait_label != null:
+		enemy_portrait_label.text = ""
+	$BottomHand/CardZonePanel/CardZoneLayout/CardZoneHeader/CardZoneToggleButton/CardZoneToggleText.text = "牌区"
+	_configure_hint_bar()
+	_configure_action_buttons()
+
+
+func _configure_hint_bar() -> void:
+	first_deploy_hint_panel.custom_minimum_size = Vector2(760, 46)
+	first_deploy_hint_panel.anchor_left = 0.5
+	first_deploy_hint_panel.anchor_right = 0.5
+	first_deploy_hint_panel.anchor_top = 1.0
+	first_deploy_hint_panel.anchor_bottom = 1.0
+	first_deploy_hint_panel.offset_left = -380.0
+	first_deploy_hint_panel.offset_right = 380.0
+	first_deploy_hint_panel.offset_top = -390.0
+	first_deploy_hint_panel.offset_bottom = -344.0
+	var hint_title := $FirstDeployHintPanel/HintMargin/HintLayout/HintTitle as Label
+	hint_title.text = "点击手牌选择武将 → 点击蓝色近端星格部署 → 自动补牌 → 推进回合"
+	hint_title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint_title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	hint_title.add_theme_font_size_override("font_size", 18)
+	var hint_icons := $FirstDeployHintPanel/HintMargin/HintLayout/HintIconRow as Control
+	hint_icons.visible = false
+	first_deploy_hint_button.text = "知道了"
+	first_deploy_hint_button.custom_minimum_size = Vector2(80, 32)
+	first_deploy_hint_button.add_theme_stylebox_override("normal", _hint_button_style)
+	first_deploy_hint_button.add_theme_stylebox_override("hover", _secondary_button_hover_style)
+	first_deploy_hint_button.add_theme_stylebox_override("pressed", _secondary_button_style)
+
+
+func _configure_action_buttons() -> void:
+	advance_turn_button.custom_minimum_size = Vector2(172, 166)
+	advance_turn_button.text = ""
+	var reset_button := $BottomHand/Controls/ResetButton as Button
+	reset_button.visible = DEBUG_BATTLE_UI or manual_battle_test_mode
+	reset_button.mouse_filter = Control.MOUSE_FILTER_STOP if reset_button.visible else Control.MOUSE_FILTER_IGNORE
+	reset_button.custom_minimum_size = Vector2(72, 58)
+	reset_button.text = ""
+	reset_button.add_theme_stylebox_override("normal", _secondary_button_style)
+	reset_button.add_theme_stylebox_override("hover", _secondary_button_hover_style)
+	reset_button.add_theme_stylebox_override("pressed", _secondary_button_style)
+	var reset_text := reset_button.get_node_or_null("ResetText") as Label
+	if reset_text != null:
+		reset_text.text = "重开" if manual_battle_test_mode else "重置"
+		reset_text.add_theme_font_size_override("font_size", 16)
+
+
 func set_screen_data(screen_data: Dictionary) -> void:
-	configured_player_deck = _validated_deck_from_data(screen_data.get("player_deck", []), STARTING_PLAYER_DECK)
-	configured_enemy_deck = _validated_deck_from_data(screen_data.get("enemy_deck", []), STARTING_ENEMY_DECK)
+	configured_player_deck = _validated_deck_from_data(screen_data.get("player_deck", []), _default_player_deck_ids())
+	configured_enemy_deck = _validated_deck_from_data(screen_data.get("enemy_deck", []), _default_enemy_deck_ids())
+	manual_battle_test_mode = bool(screen_data.get("manual_battle_test_mode", false))
+	manual_battle_test_name = str(screen_data.get("manual_battle_test_name", "Manual Battle Validation"))
 
 
-# ── StyleBoxFlat 缓存池初始化 ──
+# 鈹€鈹€ StyleBoxFlat 缂撳瓨姹犲垵濮嬪寲 鈹€鈹€
 func _build_style_caches() -> void:
 	# Advance button style
 	_advance_style = StyleBoxFlat.new()
-	_advance_style.set_corner_radius_all(14)
+	_advance_style.set_corner_radius_all(84)
 	_advance_style.set_border_width_all(5)
 	_advance_style.content_margin_left = 14
 	_advance_style.content_margin_top = 8
 	_advance_style.content_margin_right = 14
 	_advance_style.content_margin_bottom = 8
 
-	# Master panel styles — 4 variants
-	_master_panel_player_active = _make_cached_panel_style(StarPaletteScript.ACTIVE_PLAYER_BG.lightened(0.10), StarPaletteScript.ACTIVE_PLAYER_BORDER, 6)
-	_master_panel_player_inactive = _make_cached_panel_style(StarPaletteScript.INACTIVE_PLAYER_BG, StarPaletteScript.INACTIVE_PLAYER_BORDER, 3)
-	_master_panel_enemy_active = _make_cached_panel_style(StarPaletteScript.ACTIVE_ENEMY_BG.lightened(0.10), StarPaletteScript.ACTIVE_ENEMY_BORDER, 6)
-	_master_panel_enemy_inactive = _make_cached_panel_style(StarPaletteScript.INACTIVE_ENEMY_BG, StarPaletteScript.INACTIVE_ENEMY_BORDER, 3)
+	# Master panel styles 鈥?4 variants
+	_master_panel_player_active = _make_cached_panel_style(BattleUIThemeScript.PLAYER_BG, BattleUIThemeScript.PLAYER_BORDER, 6)
+	_master_panel_player_inactive = _make_cached_panel_style(BattleUIThemeScript.PLAYER_BG.darkened(0.08), BattleUIThemeScript.PLAYER_BORDER, 3)
+	_master_panel_enemy_active = _make_cached_panel_style(BattleUIThemeScript.ENEMY_BG, BattleUIThemeScript.ENEMY_BORDER, 6)
+	_master_panel_enemy_inactive = _make_cached_panel_style(BattleUIThemeScript.ENEMY_BG.darkened(0.08), BattleUIThemeScript.ENEMY_BORDER, 3)
 
 	# Overlay dismiss button
 	_overlay_button_style = StyleBoxFlat.new()
 	_overlay_button_style.bg_color = StarPaletteScript.PANEL_OVERLAY_DIM
 	_overlay_button_style.border_color = Color.TRANSPARENT
+	_top_button_style = BattleUIAssetsScript.framed_button_style(Color(0.42, 0.55, 0.68, 0.95), 24)
+	_top_button_hover_style = BattleUIAssetsScript.framed_button_style(Color(0.60, 0.75, 0.88, 1.0), 24)
+	_secondary_button_style = BattleUIAssetsScript.framed_button_style(Color(0.40, 0.48, 0.56, 0.92), 24)
+	_secondary_button_hover_style = BattleUIAssetsScript.framed_button_style(Color(0.54, 0.64, 0.72, 1.0), 24)
+	_hint_button_style = BattleUIAssetsScript.framed_button_style(Color(0.58, 0.72, 0.78, 0.95), 24)
+	_white_key_material = ShaderMaterial.new()
+	_white_key_material.shader = WHITE_KEY_ALPHA_SHADER
+	_white_key_material.set_shader_parameter("threshold", 0.82)
+	_white_key_material.set_shader_parameter("softness", 0.10)
 
 
 func _make_cached_panel_style(bg: Color, border: Color, border_width: int) -> StyleBoxFlat:
@@ -205,7 +323,7 @@ func _make_cached_panel_style(bg: Color, border: Color, border_width: int) -> St
 	return style
 
 
-# ── View 节点创建 (T3-1) — CardZoneView / BattleLogView 现在 extend Node ──
+# 鈹€鈹€ View 鑺傜偣鍒涘缓 (T3-1) 鈥?CardZoneView / BattleLogView 鐜板湪 extend Node 鈹€鈹€
 func _create_view_nodes() -> void:
 	battle_log_view = BattleLogView.new()
 	battle_log_view.name = "BattleLogView"
@@ -219,7 +337,7 @@ func _create_view_nodes() -> void:
 func _apply_depth_fade() -> void:
 	if battle_background_image == null:
 		return
-	battle_background_image.material = MAT_DEPTH_FADE_BATTLE
+	battle_background_image.material = null
 
 
 ## Apply viewport-responsive font sizes to key labels.
@@ -247,8 +365,15 @@ func _emit_battle_started() -> void:
 func _initialize_battle_log_view() -> void:
 	battle_log_view.max_lines = MAX_LOG_LINES
 	battle_log_view.max_result_chars = MAX_LOG_RESULT_CHARS
+	battle_log_view.display_enabled = SHOW_BATTLE_LOG_IN_BATTLE
 	battle_log_view.setup(log_panel, battle_log_text, toggle_log_button, log_close_button)
 	battle_log_view.visibility_changed.connect(_on_battle_log_visibility_changed)
+	if not SHOW_BATTLE_LOG_IN_BATTLE:
+		battle_log_view.collapsed = true
+		log_panel.visible = false
+		battle_log_text.text = ""
+		toggle_log_button.visible = false
+		toggle_log_button.disabled = true
 	battle_log_entries = battle_log_view.entries
 
 
@@ -301,6 +426,8 @@ func _initialize_battle_board_view() -> void:
 			"unit_at": _board_unit_at,
 			"hero_def_for_id": _hero_def_for_board,
 			"get_terrain": _board_get_terrain,
+			"is_selected_cell": _board_is_selected_cell,
+			"is_recommended_deploy_cell": _board_is_recommended_deploy_cell,
 		}
 	)
 	cell_buttons = battle_board_view.cell_buttons
@@ -315,7 +442,19 @@ func _hero_def_for_board(hero_id: String) -> Dictionary:
 
 
 func _board_get_terrain(column: int, row: int) -> String:
-	return battle_state.terrain_system.get_terrain(column, row)
+	var terrain_id = battle_state.terrain_system.get_terrain(column, row)
+	if terrain_id == null or str(terrain_id).is_empty():
+		return TerrainSystemScript.TERRAIN_GRASS
+	return str(terrain_id)
+
+
+func _board_is_selected_cell(column: int, row: int) -> bool:
+	var cell := Vector2i(column, row)
+	return cell == last_touched_cell or last_action_cells.has(cell)
+
+
+func _board_is_recommended_deploy_cell(column: int, row: int) -> bool:
+	return _should_show_recommended_deploy_cell(column, row)
 
 
 func _initialize_battle_tutorial_view() -> void:
@@ -344,6 +483,43 @@ func _initialize_battle_tutorial_view() -> void:
 	deploy_failure_toast_time_left = battle_tutorial_view.deploy_failure_toast_time_left
 
 
+func _create_manual_validation_panel() -> void:
+	if not manual_battle_test_mode:
+		return
+	manual_validation_panel = PanelContainer.new()
+	manual_validation_panel.name = "ManualValidationPanel"
+	manual_validation_panel.custom_minimum_size = Vector2(336, 210)
+	manual_validation_panel.anchor_left = 1.0
+	manual_validation_panel.anchor_right = 1.0
+	manual_validation_panel.anchor_top = 0.0
+	manual_validation_panel.anchor_bottom = 0.0
+	manual_validation_panel.offset_left = -360.0
+	manual_validation_panel.offset_right = -18.0
+	manual_validation_panel.offset_top = 92.0
+	manual_validation_panel.offset_bottom = 320.0
+	manual_validation_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.025, 0.035, 0.070, 0.84)
+	panel_style.border_color = BattleUIThemeScript.GOLD_SOFT
+	panel_style.set_border_width_all(2)
+	panel_style.set_corner_radius_all(8)
+	panel_style.content_margin_left = 12
+	panel_style.content_margin_top = 10
+	panel_style.content_margin_right = 12
+	panel_style.content_margin_bottom = 10
+	manual_validation_panel.add_theme_stylebox_override("panel", panel_style)
+	add_child(manual_validation_panel)
+
+	manual_validation_label = RichTextLabel.new()
+	manual_validation_label.name = "ManualValidationLabel"
+	manual_validation_label.bbcode_enabled = true
+	manual_validation_label.fit_content = true
+	manual_validation_label.scroll_active = false
+	manual_validation_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	manual_validation_label.add_theme_font_size_override("normal_font_size", 15)
+	manual_validation_panel.add_child(manual_validation_label)
+
+
 func _initialize_battle_animator() -> void:
 	battle_animator = BattleAnimatorScript.new()
 	battle_animator.name = "BattleAnimator"
@@ -352,6 +528,8 @@ func _initialize_battle_animator() -> void:
 		cell_buttons,
 		_anim_cell_key_to_unit_id,
 		_anim_unit_id_to_cell_key,
+		_play_unit_pose,
+		grid,
 	)
 
 
@@ -370,6 +548,10 @@ func _anim_unit_id_to_cell_key(unit_id: String) -> String:
 		return ""
 	var unit: Dictionary = battle_state.placed_units[unit_id]
 	return "%d,%d" % [int(unit.get("column", 0)), int(unit.get("row", 0))]
+
+
+func _play_unit_pose(unit_id: String, pose: String) -> void:
+	battle_board_view.play_unit_pose(unit_id, pose)
 
 
 func _on_battle_tutorial_view_changed() -> void:
@@ -392,7 +574,7 @@ func _tutorial_has_selected_card() -> bool:
 
 func _tutorial_selected_hero_name() -> String:
 	if selected_hero_id.is_empty():
-		return "手牌"
+		return "鎵嬬墝"
 	return _hero_name(selected_hero_id)
 
 
@@ -406,23 +588,231 @@ func _build_hero_buttons() -> void:
 		child.queue_free()
 	hero_buttons.clear()
 	_hero_button_styles.clear()
-	for hero_id in _player_battle_hero_ids():
+	for hand_index in range(STARTING_HAND_SIZE):
 		var hero_button := Button.new()
-		hero_button.custom_minimum_size = Vector2(236, 82)
+		hero_button.custom_minimum_size = Vector2(172, 190)
 		hero_button.focus_mode = Control.FOCUS_NONE
-		hero_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		hero_button.alignment = HORIZONTAL_ALIGNMENT_CENTER
+		hero_button.text = ""
+		hero_button.name = "HandSlot%d" % (hand_index + 1)
 		hero_button_row.add_child(hero_button)
-		hero_buttons[hero_id] = hero_button
-		# 预创建该英雄的 StyleBoxFlat，运行时只改属性
-		var style := StyleBoxFlat.new()
-		style.set_border_width_all(3)
-		style.set_corner_radius_all(10)
-		style.content_margin_left = 12
-		style.content_margin_top = 6
-		style.content_margin_right = 12
-		style.content_margin_bottom = 6
-		_hero_button_styles[hero_id] = style
-		hero_button.pressed.connect(_select_hero.bind(hero_id))
+		_build_hand_card_children(hero_button)
+		hero_buttons[hand_index] = hero_button
+		var style: StyleBoxFlat = BattleUIAssetsScript.hand_card_style()
+		_hero_button_styles[hand_index] = style
+		hero_button.pressed.connect(_select_hand_slot.bind(hand_index))
+		hero_button.gui_input.connect(_on_hand_slot_gui_input.bind(hand_index))
+
+	for hero_id in _player_battle_hero_ids():
+		if not hero_buttons.has(hero_id):
+			hero_buttons[hero_id] = hero_buttons.get(0)
+
+	var next_slot := PanelContainer.new()
+	next_slot.name = "NextDrawSlot"
+	next_slot.custom_minimum_size = Vector2(104, 190)
+	var next_label := Label.new()
+	next_label.name = "NextDrawLabel"
+	next_label.text = "下一张\n自动补牌"
+	next_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	next_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	next_label.add_theme_font_size_override("font_size", 17)
+	next_label.add_theme_color_override("font_color", BattleUIThemeScript.TEXT_MUTED)
+	next_slot.add_child(next_label)
+	var slot_style: StyleBoxFlat = BattleUIAssetsScript.hand_card_style(Color(0.040, 0.060, 0.105, 0.54), BattleUIThemeScript.CARD_DISABLED_BORDER)
+	next_slot.add_theme_stylebox_override("panel", slot_style)
+	hero_button_row.add_child(next_slot)
+
+
+func _build_hand_card_children(hero_button: Button) -> void:
+	var root := Control.new()
+	root.name = "HandCardContainer"
+	root.anchor_right = 1.0
+	root.anchor_bottom = 1.0
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hero_button.add_child(root)
+
+	var name_band := PanelContainer.new()
+	name_band.name = "NameBand"
+	name_band.anchor_right = 1.0
+	name_band.offset_top = 0.0
+	name_band.offset_bottom = 34.0
+	name_band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(name_band)
+
+	var name_style := StyleBoxFlat.new()
+	name_style.bg_color = Color(0.016, 0.025, 0.050, 0.45)
+	name_style.border_color = Color(1.0, 0.79, 0.36, 0.28)
+	name_style.set_border_width(SIDE_BOTTOM, 1)
+	name_style.set_corner_radius_all(5)
+	name_style.content_margin_left = 7
+	name_style.content_margin_top = 3
+	name_style.content_margin_right = 7
+	name_style.content_margin_bottom = 2
+	name_band.add_theme_stylebox_override("panel", name_style)
+
+	var name_label := Label.new()
+	name_label.name = "NameLabel"
+	name_label.clip_text = true
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 23)
+	name_label.add_theme_color_override("font_color", BattleUIThemeScript.TEXT_MAIN)
+	name_band.add_child(name_label)
+
+	var cost_badge := PanelContainer.new()
+	cost_badge.name = "CostBadge"
+	cost_badge.offset_left = -3.0
+	cost_badge.offset_top = -3.0
+	cost_badge.offset_right = 50.0
+	cost_badge.offset_bottom = 42.0
+	cost_badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cost_badge.z_index = 4
+	root.add_child(cost_badge)
+
+	var cost_badge_style := StyleBoxFlat.new()
+	cost_badge_style.bg_color = Color(0.030, 0.038, 0.064, 0.72)
+	cost_badge_style.border_color = Color(1.0, 0.78, 0.34, 0.72)
+	cost_badge_style.set_border_width_all(1)
+	cost_badge_style.set_corner_radius_all(6)
+	cost_badge_style.content_margin_left = 3
+	cost_badge_style.content_margin_top = 2
+	cost_badge_style.content_margin_right = 4
+	cost_badge_style.content_margin_bottom = 2
+	cost_badge.add_theme_stylebox_override("panel", cost_badge_style)
+
+	var cost_badge_inner := HBoxContainer.new()
+	cost_badge_inner.name = "CostBadgeInner"
+	cost_badge_inner.alignment = BoxContainer.ALIGNMENT_CENTER
+	cost_badge_inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cost_badge_inner.add_theme_constant_override("separation", 2)
+	cost_badge.add_child(cost_badge_inner)
+	cost_badge_inner.add_child(_make_hand_icon_value("cost", false, Vector2(18, 18), 19, Vector2(18, 22)))
+
+	var portrait_stage := Control.new()
+	portrait_stage.name = "PortraitStage"
+	portrait_stage.anchor_right = 1.0
+	portrait_stage.anchor_bottom = 1.0
+	portrait_stage.offset_top = 35.0
+	portrait_stage.offset_bottom = -35.0
+	portrait_stage.custom_minimum_size = Vector2(0, 112)
+	portrait_stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(portrait_stage)
+
+	var portrait_glow := ColorRect.new()
+	portrait_glow.name = "PortraitGlow"
+	portrait_glow.anchor_left = 0.12
+	portrait_glow.anchor_top = 0.06
+	portrait_glow.anchor_right = 0.88
+	portrait_glow.anchor_bottom = 0.98
+	portrait_glow.color = Color(0.17, 0.44, 0.72, 0.16)
+	portrait_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_stage.add_child(portrait_glow)
+
+	var portrait := TextureRect.new()
+	portrait.name = "Portrait"
+	portrait.anchor_left = -0.04
+	portrait.anchor_top = -0.12
+	portrait.anchor_right = 1.04
+	portrait.anchor_bottom = 1.08
+	portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_stage.add_child(portrait)
+
+	var state_label := Label.new()
+	state_label.name = "StateLabel"
+	state_label.anchor_left = 0.06
+	state_label.anchor_top = 0.76
+	state_label.anchor_right = 0.94
+	state_label.anchor_bottom = 0.98
+	state_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	state_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	state_label.add_theme_font_size_override("font_size", 13)
+	state_label.add_theme_color_override("font_color", BattleUIThemeScript.TEXT_MAIN)
+	state_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_stage.add_child(state_label)
+
+	var stats_row := HBoxContainer.new()
+	stats_row.name = "BottomStatBar"
+	stats_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	stats_row.anchor_top = 1.0
+	stats_row.anchor_right = 1.0
+	stats_row.anchor_bottom = 1.0
+	stats_row.offset_top = -34.0
+	stats_row.custom_minimum_size = Vector2(0, 34)
+	stats_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stats_row.add_theme_constant_override("separation", 12)
+	root.add_child(stats_row)
+	for stat_id in ["hp", "attack"]:
+		stats_row.add_child(_make_hand_icon_value(stat_id, false))
+
+	var meta_label := Label.new()
+	meta_label.name = "MetaLabel"
+	meta_label.visible = false
+	meta_label.clip_text = true
+	meta_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	meta_label.add_theme_font_size_override("font_size", 12)
+	meta_label.add_theme_color_override("font_color", BattleUIThemeScript.TEXT_MUTED)
+	root.add_child(meta_label)
+
+	var legacy_state := Label.new()
+	legacy_state.name = "StateLabel"
+	legacy_state.visible = false
+	root.add_child(legacy_state)
+
+	_build_hand_card_legacy_aliases(root)
+
+
+func _build_hand_card_legacy_aliases(root: Control) -> void:
+	var legacy_top := HBoxContainer.new()
+	legacy_top.name = "TopRow"
+	legacy_top.visible = false
+	root.add_child(legacy_top)
+	var legacy_name := Label.new()
+	legacy_name.name = "NameLabel"
+	legacy_top.add_child(legacy_name)
+	var legacy_cost := Label.new()
+	legacy_cost.name = "CostLabel"
+	legacy_top.add_child(legacy_cost)
+	var legacy_portrait := TextureRect.new()
+	legacy_portrait.name = "Portrait"
+	legacy_portrait.visible = false
+	root.add_child(legacy_portrait)
+	var legacy_meta := Label.new()
+	legacy_meta.name = "MetaLabel"
+	legacy_meta.visible = false
+	root.add_child(legacy_meta)
+	var legacy_stats := HBoxContainer.new()
+	legacy_stats.name = "StatsRow"
+	legacy_stats.visible = false
+	root.add_child(legacy_stats)
+	for stat_id in ["hp", "attack", "cost", "class", "faction"]:
+		legacy_stats.add_child(_make_hand_icon_value(stat_id, stat_id == "class" or stat_id == "faction"))
+
+
+func _make_hand_icon_value(stat_id: String, badge: bool = false, icon_size: Vector2 = Vector2.ZERO, font_size: int = 0, value_size: Vector2 = Vector2.ZERO) -> HBoxContainer:
+	var item := HBoxContainer.new()
+	item.name = "%sItem" % stat_id.capitalize()
+	item.custom_minimum_size = Vector2(44, 24) if not badge else Vector2(24, 24)
+	item.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	item.add_theme_constant_override("separation", 3)
+	var icon := TextureRect.new()
+	icon.name = "Icon"
+	icon.custom_minimum_size = icon_size if icon_size != Vector2.ZERO else (Vector2(24, 24) if badge else Vector2(18, 18))
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	item.add_child(icon)
+	var value := Label.new()
+	value.name = "Value"
+	value.custom_minimum_size = value_size if value_size != Vector2.ZERO else (Vector2(21, 22) if not badge else Vector2(0, 18))
+	value.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	value.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	value.add_theme_font_size_override("font_size", font_size if font_size > 0 else (16 if not badge else 13))
+	value.add_theme_color_override("font_color", BattleUIThemeScript.TEXT_MAIN)
+	value.visible = not badge
+	item.add_child(value)
+	return item
 
 
 func _build_board() -> void:
@@ -431,12 +821,14 @@ func _build_board() -> void:
 
 
 func _apply_visual_placeholder_theme() -> void:
-	_apply_panel_style_from_cache($TopBar, StarPaletteScript.PANEL_TOP_BAR, StarPaletteScript.PANEL_TOP_BAR_BORDER, 3)
-	_apply_panel_style_from_cache(turn_info_panel, StarPaletteScript.PANEL_STATUS, StarPaletteScript.PANEL_STATUS_BORDER, 2)
+	_apply_panel_style_from_cache($TopBar, Color(0.012, 0.020, 0.052, 0.52), BattleUIThemeScript.GOLD_SOFT, 1)
+	_apply_panel_style_from_cache(turn_info_panel, Color(0.018, 0.035, 0.086, 0.72), BattleUIThemeScript.GOLD_SOFT, 1)
 	_apply_master_panel_style(BoardModelScript.SIDE_LEFT)
 	_apply_master_panel_style(BoardModelScript.SIDE_RIGHT)
-	_apply_panel_style_from_cache($DuelArea/CenterBoardStack/BattleArea/BoardPanel, StarPaletteScript.PANEL_BOARD, StarPaletteScript.PANEL_BOARD_BORDER, 4)
-	_apply_panel_style_from_cache($BottomHand/CardZonePanel, StarPaletteScript.PANEL_CARD_ZONE, StarPaletteScript.PANEL_CARD_ZONE_BORDER, 2)
+	_apply_panel_style_from_cache($DuelArea/CenterBoardStack/BattleArea/BoardPanel, Color(0.012, 0.018, 0.045, 0.06), BattleUIThemeScript.GOLD_SOFT, 1)
+	_apply_panel_style_from_cache($BottomHand/CardZonePanel, Color(0.018, 0.030, 0.070, 0.82), BattleUIThemeScript.GOLD_SOFT, 1)
+	_apply_hand_tray_backplate()
+	_apply_battle_asset_button_styles()
 	_apply_button_overlay_style()
 	_apply_panel_style_from_cache($CardZoneDrawerPanel, StarPaletteScript.PANEL_DRAWER, StarPaletteScript.PANEL_DRAWER_BORDER, 3)
 	_apply_panel_style_from_cache($LogPanel, StarPaletteScript.PANEL_LOG, StarPaletteScript.PANEL_LOG_BORDER, 3)
@@ -444,6 +836,36 @@ func _apply_visual_placeholder_theme() -> void:
 	_apply_panel_style_from_cache($UnitDetailPanel, StarPaletteScript.PANEL_DETAIL, StarPaletteScript.PANEL_DETAIL_BORDER, 3)
 	_apply_panel_style_from_cache($FirstDeployHintPanel, StarPaletteScript.PANEL_HINT, StarPaletteScript.PANEL_HINT_BORDER, 4)
 	_apply_tutorial_progress_row_style()
+
+
+func _apply_battle_asset_button_styles() -> void:
+	for button in [$TopBar/BackButton, $TopBar/LogButton]:
+		button.add_theme_stylebox_override("normal", _top_button_style)
+		button.add_theme_stylebox_override("hover", _top_button_hover_style)
+		button.add_theme_stylebox_override("pressed", _top_button_style)
+	card_zone_toggle_button.add_theme_stylebox_override("normal", _secondary_button_style)
+	card_zone_toggle_button.add_theme_stylebox_override("hover", _secondary_button_hover_style)
+	card_zone_toggle_button.add_theme_stylebox_override("pressed", _secondary_button_style)
+
+
+func _apply_hand_tray_backplate() -> void:
+	var hero_scroll := $BottomHand/Controls/HeroScroll as ScrollContainer
+	var backplate := hero_scroll.get_node_or_null("HandTrayBackplate") as TextureRect
+	if backplate == null:
+		backplate = TextureRect.new()
+		backplate.name = "HandTrayBackplate"
+		backplate.anchor_left = 0.0
+		backplate.anchor_top = 0.0
+		backplate.anchor_right = 1.0
+		backplate.anchor_bottom = 1.0
+		backplate.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		backplate.stretch_mode = TextureRect.STRETCH_SCALE
+		backplate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		hero_scroll.add_child(backplate)
+		hero_scroll.move_child(backplate, 0)
+	backplate.texture = load(BattleUIAssetsScript.HAND_CARD_BG) as Texture2D
+	backplate.material = _white_key_material
+	backplate.self_modulate = Color(0.72, 0.84, 1.0, 0.95)
 
 
 func _apply_panel_style_from_cache(panel: Control, bg_color: Color, border_color: Color, border_width: int) -> void:
@@ -475,13 +897,8 @@ func _apply_master_panel_style(side: String) -> void:
 func _refresh_master_panel_styles() -> void:
 	_apply_master_panel_style(BoardModelScript.SIDE_LEFT)
 	_apply_master_panel_style(BoardModelScript.SIDE_RIGHT)
-	# 呼吸发光 Shader — 活跃方挂载
-	if turn_controller.current_side == BoardModelScript.SIDE_LEFT:
-		player_master_panel.material = _shader_glow_active
-		enemy_master_panel.material = null
-	else:
-		player_master_panel.material = null
-		enemy_master_panel.material = _shader_glow_active_enemy
+	player_master_panel.material = null
+	enemy_master_panel.material = null
 
 
 func _active_side_feedback_color(side: String) -> Color:
@@ -497,7 +914,7 @@ func _side_feedback_border_color(side: String) -> Color:
 
 
 func _current_side_feedback_label() -> String:
-	return "%s行动 - %s" % [_side_label(turn_controller.current_side), _side_direction_text(turn_controller.current_side)]
+	return "%s琛屽姩 - %s" % [_side_label(turn_controller.current_side), _side_direction_text(turn_controller.current_side)]
 
 
 func _apply_button_overlay_style() -> void:
@@ -507,29 +924,65 @@ func _apply_button_overlay_style() -> void:
 
 
 func _select_hero(hero_id: String) -> void:
+	var hand_index := player_hand.find(hero_id)
+	_select_hand_slot(hand_index)
+
+
+func _select_hand_slot(hand_index: int) -> void:
+	if hand_index < 0 or hand_index >= player_hand.size():
+		_update_status("该手牌槽为空。")
+		return
+	var hero_id := str(player_hand[hand_index])
+	if not battle_state.can_afford(BoardModelScript.SIDE_LEFT, hero_id):
+		_update_status("%s 星力不足，当前无法部署。" % _hero_name(hero_id))
+		_show_card_detail(hero_id)
+		return
 	if not player_hand.has(hero_id):
 		_update_status("%s 已不在手牌中。" % _hero_name(hero_id))
 		return
 	selected_hero_id = hero_id
+	selected_hand_index = hand_index
 	selected_card_hero_id = hero_id
 	_update_hero_buttons()
 	_update_first_deploy_hint()
 	_show_card_detail(hero_id)
 	var hero_def: Dictionary = battle_state.get_hero_def(hero_id)
-	_update_status("已选择%s，请点击左侧部署区格子。" % str(hero_def.get("name", hero_id)))
+	_update_status("已选择 %s，请点击左侧蓝色近端星格部署。" % str(hero_def.get("name", hero_id)))
+
+
+func _on_hand_slot_gui_input(event: InputEvent, hand_index: int) -> void:
+	if event is InputEventMouseButton:
+		var mouse_event := event as InputEventMouseButton
+		if mouse_event.pressed and mouse_event.button_index == MOUSE_BUTTON_RIGHT:
+			_show_hand_slot_detail(hand_index)
+			accept_event()
+
+
+func _show_hand_slot_detail(hand_index: int) -> void:
+	if hand_index < 0 or hand_index >= player_hand.size():
+		_update_status("该手牌槽为空。")
+		return
+	_show_card_detail(str(player_hand[hand_index]))
 
 
 func _deploy_selected_to_cell(column: int, row: int) -> void:
 	last_touched_cell = Vector2i(column, row)
+	_ensure_selected_hand_index()
 	var unit_data: Dictionary = battle_state.board.get_unit_at(column, row)
 	if not unit_data.is_empty():
 		_show_unit_detail(unit_data)
 		_refresh_board()
-		_update_status("正在查看%s，点击空格继续部署。" % _unit_display_name(unit_data))
+		_update_status("正在查看 %s，点击空格继续部署。" % _unit_display_name(unit_data))
 		return
 	_hide_unit_detail()
 	var hero_id := selected_hero_id
 	_apply_deployment_result(battle_state.deploy_hero(hero_id, BoardModelScript.SIDE_LEFT, column, row), hero_id, column, row)
+
+
+func _ensure_selected_hand_index() -> void:
+	if selected_hand_index >= 0 and selected_hand_index < player_hand.size() and str(player_hand[selected_hand_index]) == selected_hero_id:
+		return
+	selected_hand_index = player_hand.find(selected_hero_id)
 
 
 func _apply_deployment_result(result: Dictionary, hero_id: String = "", column: int = 0, row: int = 0) -> void:
@@ -537,7 +990,7 @@ func _apply_deployment_result(result: Dictionary, hero_id: String = "", column: 
 		first_deploy_hint_dismissed = true
 		deploy_failure_highlight_active = false
 		_hide_deploy_failure_toast()
-		_consume_hero_from_hand(BoardModelScript.SIDE_LEFT, hero_id)
+		_consume_selected_hand_slot(BoardModelScript.SIDE_LEFT, hero_id)
 		_select_next_available_hero()
 		var unit_data: Dictionary = result.unit
 		var placed_column := int(unit_data.column)
@@ -550,6 +1003,10 @@ func _apply_deployment_result(result: Dictionary, hero_id: String = "", column: 
 		])
 		_log_skill_results(_unit_display_name(unit_data), result.get("skill_results", []))
 		_refresh_board()
+		_emit_unit_deployed_visual(unit_data, BoardModelScript.SIDE_LEFT, int(result.cost))
+		_emit_star_power_feedback(BoardModelScript.SIDE_LEFT, -int(result.cost))
+		_emit_faction_energy_feedback(BoardModelScript.SIDE_LEFT, result.get("faction_energy_results", []))
+		_emit_skill_pose_results(unit_data, result.get("skill_results", []))
 		_update_status("%s 已部署到 (%d,%d)，消耗 %d 星力。%s" % [
 			unit_data.name,
 			placed_column,
@@ -577,13 +1034,18 @@ func _advance_turn() -> Dictionary:
 	var acting_side: String = turn_controller.current_side
 	var auto_deploy_result := {}
 	var start_result: Dictionary = turn_controller.start_side_turn()
-	var drawn_cards: Array = _draw_cards(acting_side, DRAW_PER_SIDE_TURN)
-	_add_battle_log(_side_label(acting_side), "回合开始", "星力 +%d，%d → %d" % [
+	_emit_side_turn_started_feedback(acting_side, start_result)
+	_emit_star_power_feedback(acting_side, int(start_result.get("star_power_after", 0)) - int(start_result.get("star_power_before", 0)))
+	_emit_faction_energy_feedback(acting_side, start_result.get("faction_energy_results", []))
+	var cards_needed: int = maxi(0, STARTING_HAND_SIZE - _hand_for_side(acting_side).size())
+	var drawn_cards: Array = _draw_cards(acting_side, mini(DRAW_PER_SIDE_TURN, cards_needed))
+	_add_battle_log(_side_label(acting_side), "回合开始", "星力 +%d，%d -> %d" % [
 		int(start_result.star_restore),
 		int(start_result.star_power_before),
 		int(start_result.star_power_after),
 	])
-	_log_drawn_cards(acting_side, drawn_cards)
+	if cards_needed > 0:
+		_log_drawn_cards(acting_side, drawn_cards)
 	_log_skill_results(_side_label(acting_side), start_result.get("skill_results", []))
 	if acting_side == BoardModelScript.SIDE_RIGHT:
 		auto_deploy_result = _auto_deploy_enemy()
@@ -595,10 +1057,15 @@ func _advance_turn() -> Dictionary:
 	var action_results: Array = turn_controller.act_current_side()
 	_capture_action_cells(action_results)
 	_log_action_results(acting_units, action_results)
+	_emit_action_visual_events(acting_units, action_results)
 	var end_result: Dictionary = turn_controller.end_side_turn()
+	_emit_side_turn_ended_feedback(acting_side, end_result)
 	_log_status_results(end_result.get("status_results", []))
 	_refresh_board()
-	_update_status(_format_turn_summary(acting_side, start_result, auto_deploy_result, action_results, end_result))
+	var turn_summary := _format_turn_summary(acting_side, start_result, auto_deploy_result, action_results, end_result)
+	_add_battle_log(_side_label(acting_side), "回合摘要", turn_summary)
+	_show_battle_event_notice(_format_turn_event_notice(acting_side, start_result, action_results))
+	_update_status("")
 	var battle_result: Dictionary = _check_battle_end()
 	if not battle_result.is_empty():
 		_add_battle_log("战斗", "结算", _outcome_text(str(battle_result.get("outcome", ""))))
@@ -618,7 +1085,8 @@ func _advance_turn() -> Dictionary:
 
 
 func _auto_deploy_enemy() -> Dictionary:
-	for hero_id in enemy_hand.duplicate():
+	for hand_index in range(enemy_hand.size()):
+		var hero_id := str(enemy_hand[hand_index])
 		if not battle_state.can_afford(BoardModelScript.SIDE_RIGHT, hero_id):
 			continue
 		for row in range(1, BoardModelScript.ROWS + 1):
@@ -628,7 +1096,9 @@ func _auto_deploy_enemy() -> Dictionary:
 					continue
 				var deploy_result: Dictionary = battle_state.deploy_hero(hero_id, BoardModelScript.SIDE_RIGHT, column, row)
 				if deploy_result.ok:
-					_consume_hero_from_hand(BoardModelScript.SIDE_RIGHT, hero_id)
+					_consume_hand_index(BoardModelScript.SIDE_RIGHT, hand_index, hero_id)
+					_emit_star_power_feedback(BoardModelScript.SIDE_RIGHT, -int(deploy_result.get("cost", 0)))
+					_emit_faction_energy_feedback(BoardModelScript.SIDE_RIGHT, deploy_result.get("faction_energy_results", []))
 					return deploy_result
 	return {"ok": false, "reason": "no_affordable_enemy_deploy_cell"}
 
@@ -646,18 +1116,26 @@ func _format_turn_summary(
 	]
 	if not auto_deploy_result.is_empty() and bool(auto_deploy_result.get("ok", false)):
 		var unit_data: Dictionary = auto_deploy_result.unit
-		parts.append("敌方自动部署%s到 (%d,%d)。" % [
+		parts.append("敌方自动部署 %s 到 (%d,%d)。" % [
 			str(unit_data.get("name", unit_data.get("hero_id", ""))),
 			int(unit_data.get("column", 0)),
 			int(unit_data.get("row", 0)),
 		])
 	parts.append("共 %d 个单位行动。" % action_results.size())
-	parts.append("下一步：点击%s行动，执行第 %d 回合%s。" % [
-		_side_label(str(end_result.next_side)),
+	parts.append(_combat_feel_timing_hint())
+	parts.append("下一步：点击推进回合，执行第 %d 回合%s。" % [
 		int(end_result.turn_number),
 		_side_label(str(end_result.next_side)),
 	])
 	return " ".join(parts)
+
+
+func _format_turn_event_notice(acting_side: String, start_result: Dictionary, action_results: Array) -> String:
+	return "%s行动｜星力 +%d｜%d 单位行动" % [
+		_side_label(acting_side),
+		int(start_result.get("star_restore", 0)),
+		action_results.size(),
+	]
 
 func _initialize_card_piles() -> void:
 	battle_deck.setup(_player_battle_hero_ids(), _enemy_battle_hero_ids(), STARTING_HAND_SIZE, RECYCLE_DISCARD_ON_EMPTY)
@@ -681,13 +1159,13 @@ func _draw_cards(side: String, count: int) -> Array:
 	if side == BoardModelScript.SIDE_LEFT:
 		_select_next_available_hero()
 	if recycled and not drawn_cards.is_empty():
-		_add_battle_log(_side_label(side), "洗牌", "弃牌回收到牌库后抽牌")
+		_add_battle_log(_side_label(side), "洗牌", "弃牌回收后抽牌")
 	return drawn_cards
 
 
 func _log_drawn_cards(side: String, drawn_cards: Array) -> void:
 	if drawn_cards.is_empty():
-		_add_battle_log(_side_label(side), "抽牌", "牌库与弃牌均为空")
+		_add_battle_log(_side_label(side), "抽牌", "牌库已空")
 		return
 	var names: Array[String] = []
 	for hero_id_value in drawn_cards:
@@ -696,36 +1174,119 @@ func _log_drawn_cards(side: String, drawn_cards: Array) -> void:
 
 
 func _update_status(message: String) -> void:
-	status_label.text = message
+	if not message.is_empty():
+		_show_battle_event_notice(_compact_hud_event_text(message))
+	status_label.text = _format_core_hud_label()
 	player_hud_label.text = _format_side_hud(BoardModelScript.SIDE_LEFT)
 	enemy_hud_label.text = _format_side_hud(BoardModelScript.SIDE_RIGHT)
-	star_label.text = "第 %d 回合｜%s行动" % [
-		turn_controller.turn_number,
-		_side_label(turn_controller.current_side),
-	]
+	player_star_label.text = "星力 %d" % battle_state.get_star_power(BoardModelScript.SIDE_LEFT)
+	enemy_star_label.text = "星力 %d" % battle_state.get_star_power(BoardModelScript.SIDE_RIGHT)
+	star_label.text = _format_resource_hud_label()
 	_update_advance_turn_button()
 	_update_tutorial_progress()
 	_update_card_zone_summary()
 	_update_hero_buttons()
 	_refresh_master_panel_styles()
 	_update_first_deploy_hint()
+	_update_manual_validation_panel()
+
+
+func get_manual_validation_snapshot() -> Dictionary:
+	return {
+		"enabled": manual_battle_test_mode,
+		"name": manual_battle_test_name,
+		"turn_number": turn_controller.turn_number,
+		"current_side": turn_controller.current_side,
+		"left_star_power": battle_state.get_star_power(BoardModelScript.SIDE_LEFT),
+		"right_star_power": battle_state.get_star_power(BoardModelScript.SIDE_RIGHT),
+		"left_units": _manual_unit_names(BoardModelScript.SIDE_LEFT),
+		"right_units": _manual_unit_names(BoardModelScript.SIDE_RIGHT),
+		"stats": battle_state.battle_stats.snapshot(),
+	}
+
+
+func _update_manual_validation_panel() -> void:
+	if not manual_battle_test_mode or manual_validation_label == null:
+		return
+	var snapshot := get_manual_validation_snapshot()
+	var stats: Dictionary = snapshot.get("stats", {})
+	var lines: Array[String] = [
+		"[b]Manual Battle Test[/b]",
+		manual_battle_test_name,
+		"回合: %d / %s" % [int(snapshot.get("turn_number", 0)), _side_label(str(snapshot.get("current_side", "")))],
+		"星力: 我方 %d / 敌方 %d" % [int(snapshot.get("left_star_power", 0)), int(snapshot.get("right_star_power", 0))],
+		"我方: %s" % _manual_join(snapshot.get("left_units", [])),
+		"敌方: %s" % _manual_join(snapshot.get("right_units", [])),
+		"技能触发: %s" % _manual_counter_text(stats.get("skill_triggers", {}), 5),
+		"伤害: %s" % _manual_counter_text(stats.get("hero_damage_dealt", {}), 5),
+		"承伤: %s" % _manual_counter_text(stats.get("hero_damage_taken", {}), 5),
+		"治疗: %s" % _manual_counter_text(stats.get("hero_healing_done", {}), 3),
+		"击杀: 左 %d / 右 %d" % [
+			int(stats.get("units_defeated", {}).get(BoardModelScript.SIDE_LEFT, 0)),
+			int(stats.get("units_defeated", {}).get(BoardModelScript.SIDE_RIGHT, 0)),
+		],
+		"阵营星力: %s" % _manual_counter_text(stats.get("faction_energy_heroes", {}), 5),
+	]
+	manual_validation_label.text = "\n".join(lines)
+
+
+func _manual_unit_names(side: String) -> Array[String]:
+	var names: Array[String] = []
+	for unit_data: Dictionary in battle_state.get_units_by_side(side):
+		if int(unit_data.get("hp", 0)) <= 0:
+			continue
+		names.append("%s(%d,%d)" % [
+			_unit_display_name(unit_data),
+			int(unit_data.get("column", 0)),
+			int(unit_data.get("row", 0)),
+		])
+	return names
+
+
+func _manual_join(values: Array) -> String:
+	if values.is_empty():
+		return "-"
+	var text_values: Array[String] = []
+	for value in values:
+		text_values.append(str(value))
+	return "、".join(text_values)
+
+
+func _manual_counter_text(counter: Dictionary, limit: int) -> String:
+	if counter.is_empty():
+		return "-"
+	var rows: Array = []
+	for key in counter.keys():
+		rows.append({"key": str(key), "value": int(counter.get(key, 0))})
+	rows.sort_custom(func(left: Dictionary, right: Dictionary) -> bool:
+		return int(left.get("value", 0)) > int(right.get("value", 0))
+	)
+	var parts: Array[String] = []
+	for index in range(mini(limit, rows.size())):
+		var row: Dictionary = rows[index]
+		parts.append("%s=%d" % [str(row.get("key", "")), int(row.get("value", 0))])
+	return "、".join(parts)
 
 
 func _update_advance_turn_button() -> void:
 	if advance_turn_button == null:
 		return
-	var side_text := _side_label(turn_controller.current_side)
-	advance_turn_button.text = "%s\n点击推进" % _current_side_feedback_label()
-	advance_turn_button.tooltip_text = "当前是%s行动，%s；点击后结算本方抽牌、部署、移动/攻击，并切换行动侧。" % [side_text, _side_direction_text(turn_controller.current_side)]
-	advance_turn_button.custom_minimum_size = Vector2(248, 118)
-	advance_turn_button.add_theme_font_size_override("font_size", 30)
-	# 复用缓存 StyleBoxFlat，每帧只改颜色属性
-	_advance_style.bg_color = StarPaletteScript.active_bg(turn_controller.current_side).lightened(0.16)
-	_advance_style.border_color = StarPaletteScript.active_border(turn_controller.current_side)
+	advance_turn_button.text = ""
+	var advance_text_label := advance_turn_button.get_node_or_null("AdvanceText") as Label
+	if advance_text_label != null:
+		advance_text_label.text = "推进\n回合"
+		advance_text_label.add_theme_font_size_override("font_size", 26)
+	advance_turn_button.tooltip_text = "结算当前行动并推进到下一回合"
+	advance_turn_button.custom_minimum_size = Vector2(172, 166)
+	advance_turn_button.add_theme_font_size_override("font_size", 26)
+	_advance_style.bg_color = Color(0.045, 0.135, 0.245, 0.98)
+	_advance_style.border_color = BattleUIThemeScript.GOLD
+	_advance_style.set_corner_radius_all(18)
+	_advance_style.set_border_width_all(4)
 	advance_turn_button.add_theme_stylebox_override("normal", _advance_style)
 	advance_turn_button.add_theme_stylebox_override("hover", _advance_style)
 	advance_turn_button.add_theme_stylebox_override("pressed", _advance_style)
-	advance_turn_button.add_theme_color_override("font_color", StarPaletteScript.TEXT_GOLD)
+	advance_turn_button.add_theme_color_override("font_color", BattleUIThemeScript.TEXT_MAIN)
 
 
 func _format_side_hud(side: String) -> String:
@@ -733,20 +1294,69 @@ func _format_side_hud(side: String) -> String:
 	var hand_count := _hand_for_side(side).size()
 	var hp: int = battle_state.get_master_hp(side)
 	var max_hp: int = battle_state.get_master_max_hp(side)
-	var star_power: int = battle_state.get_star_power(side)
-	var active_marker := "● 当前行动" if turn_controller.current_side == side else "待命观星"
-	return "%s - %s\nHP %s %d/%d\n星力 %s %d\n牌库 %d%s  手牌 %d" % [
-		_side_label(side),
-		active_marker,
-		_meter_text(hp, max_hp, 10, "■", "□"),
+	return "HP %d/%d\n牌库 %d  手牌 %d" % [
 		hp,
 		max_hp,
-		_star_power_text(star_power),
-		star_power,
 		deck_count,
-		"（抽空）" if deck_count == 0 else "",
 		hand_count,
 	]
+
+
+func _combat_feel_timing_hint() -> String:
+	return "下次星力 +%d｜星潮 %s｜%s" % [
+		turn_controller.get_star_restore_amount(),
+		_star_tide_hint(),
+		_current_decision_hint(),
+	]
+
+
+func _format_core_hud_label() -> String:
+	return "第 %d 回合｜%s行动" % [
+		turn_controller.turn_number,
+		_side_label(turn_controller.current_side),
+	]
+
+
+func _format_resource_hud_label() -> String:
+	var side := turn_controller.current_side
+	return "星力 %d(+%d)｜星潮 %s｜%s" % [
+		battle_state.get_star_power(side),
+		turn_controller.get_star_restore_amount(),
+		_star_tide_hint(),
+		_current_decision_hint(),
+	]
+
+
+func _compact_hud_event_text(message: String) -> String:
+	var text := message.strip_edges()
+	if text.length() <= 28:
+		return text
+	return "%s..." % text.substr(0, 28)
+
+
+func _show_battle_event_notice(message: String) -> void:
+	if message.is_empty() or battle_animator == null:
+		return
+	if battle_animator.has_method("_spawn_screen_notice"):
+		battle_animator._spawn_screen_notice(message, Color(0.74, 0.90, 1.0, 1.0), 0.78)
+
+
+func _star_tide_hint() -> String:
+	var completed_rounds := turn_controller.get_completed_rounds()
+	var restore_interval := TurnControllerScript.STAR_TIDE_RESTORE_ROUND_INTERVAL
+	var next_restore_in := restore_interval - (completed_rounds % restore_interval)
+	var master_bonus := turn_controller.get_star_tide_master_damage_bonus()
+	if master_bonus > 0:
+		return "主将伤害 +%d" % master_bonus
+	return "%d 回合后升潮" % next_restore_in
+
+
+func _current_decision_hint() -> String:
+	if turn_controller.turn_number <= 3:
+		return "前期：部署站位"
+	if turn_controller.turn_number <= 10:
+		return "中期：技能窗口"
+	return "后期：收割推进"
 
 
 func _meter_text(value: int, max_value: int, steps: int, filled_char: String, empty_char: String) -> String:
@@ -766,6 +1376,7 @@ func _update_card_zone_summary() -> void:
 	card_zone_view.selected_card_hero_id = selected_card_hero_id
 	card_zone_view.set_piles(player_hand, player_discard, enemy_hand, enemy_discard)
 	card_zone_view.refresh()
+	card_zone_summary_label.text = "牌库剩余 %d" % player_deck.size()
 	card_zone_collapsed = card_zone_view.collapsed
 	selected_card_hero_id = card_zone_view.selected_card_hero_id
 	_update_overlay_dismiss_visibility()
@@ -805,8 +1416,8 @@ func _format_deck_status(side: String) -> String:
 	var deck_count := _deck_for_side(side).size()
 	if deck_count == 0:
 		if _discard_for_side(side).is_empty():
-			return "0（无可回收）"
-		return "0（待洗回 %d）" % _discard_for_side(side).size()
+			return "0（牌库已空）"
+		return "0（牌库已空，弃牌已用 %d）" % _discard_for_side(side).size()
 	return "%d" % deck_count
 
 
@@ -829,7 +1440,7 @@ func _add_card_zone_row(title: String, hero_ids: Array) -> void:
 
 func _format_card_button_text(hero_id: String) -> String:
 	var hero_def: Dictionary = battle_state.get_hero_def(hero_id)
-	return "%s - 费%d\n阵营：%s" % [
+	return "%s - 费 %d\n阵营：%s" % [
 		str(hero_def.get("name", hero_id)),
 		int(hero_def.get("cost", 0)),
 		_faction_text(str(hero_def.get("faction", ""))),
@@ -979,6 +1590,11 @@ func _refresh_battle_log() -> void:
 
 
 func _toggle_battle_log() -> void:
+	if not SHOW_BATTLE_LOG_IN_BATTLE:
+		battle_log_view.close()
+		battle_log_collapsed = true
+		_update_overlay_dismiss_visibility()
+		return
 	battle_log_view.toggle()
 	battle_log_collapsed = battle_log_view.collapsed
 	_update_log_visibility()
@@ -991,13 +1607,21 @@ func _close_battle_log() -> void:
 
 
 func _update_log_visibility() -> void:
+	if not SHOW_BATTLE_LOG_IN_BATTLE:
+		battle_log_view.collapsed = true
+		battle_log_collapsed = true
+		log_panel.visible = false
+		toggle_log_button.visible = false
+		toggle_log_button.disabled = true
+		_update_overlay_dismiss_visibility()
+		return
 	battle_log_view.update_visibility()
 	battle_log_collapsed = battle_log_view.collapsed
 	_update_overlay_dismiss_visibility()
 
 
 func _update_overlay_dismiss_visibility() -> void:
-	overlay_dismiss_button.visible = not card_zone_collapsed or not battle_log_view.collapsed
+	overlay_dismiss_button.visible = not card_zone_collapsed
 
 func _log_auto_deploy(auto_deploy_result: Dictionary) -> void:
 	if auto_deploy_result.is_empty():
@@ -1010,6 +1634,8 @@ func _log_auto_deploy(auto_deploy_result: Dictionary) -> void:
 			int(unit_data.get("row", 0)),
 		])
 		_log_skill_results(_unit_display_name(unit_data), auto_deploy_result.get("skill_results", []))
+		_emit_unit_deployed_visual(unit_data, BoardModelScript.SIDE_RIGHT, int(auto_deploy_result.get("cost", 0)))
+		_emit_skill_pose_results(unit_data, auto_deploy_result.get("skill_results", []))
 		return
 	_add_battle_log("敌方", "自动部署", "跳过：%s" % _reason_text(str(auto_deploy_result.get("reason", ""))))
 
@@ -1022,6 +1648,86 @@ func _log_action_results(acting_units: Array, action_results: Array) -> void:
 			actor = _unit_display_name(acting_units[index])
 		_add_battle_log(actor, _action_label(action_result), _action_result_summary(action_result))
 		_log_skill_results(actor, action_result.get("skill_results", []))
+		if index < acting_units.size():
+			_emit_skill_pose_results(acting_units[index], action_result.get("skill_results", []))
+
+
+func _emit_unit_deployed_visual(unit_data: Dictionary, side: String, cost: int) -> void:
+	var bus := get_node_or_null("/root/EventBus")
+	if bus != null and bus.has_signal("unit_deployed"):
+		bus.unit_deployed.emit(unit_data, side, cost)
+
+
+func _emit_side_turn_started_feedback(side: String, start_result: Dictionary) -> void:
+	var bus := get_node_or_null("/root/EventBus")
+	if bus != null and bus.has_signal("side_turn_started"):
+		bus.side_turn_started.emit(side, start_result)
+
+
+func _emit_side_turn_ended_feedback(side: String, end_result: Dictionary) -> void:
+	var bus := get_node_or_null("/root/EventBus")
+	if bus == null:
+		return
+	if bus.has_signal("side_turn_ended"):
+		bus.side_turn_ended.emit(side, end_result)
+	if bool(end_result.get("completed_round", false)) and bus.has_signal("turn_completed"):
+		bus.turn_completed.emit(int(end_result.get("turn_number", turn_controller.turn_number)))
+
+
+func _emit_star_power_feedback(side: String, amount: int) -> void:
+	if amount == 0:
+		return
+	var bus := get_node_or_null("/root/EventBus")
+	if bus != null and bus.has_signal("star_power_changed"):
+		bus.star_power_changed.emit(side, amount)
+
+
+func _emit_faction_energy_feedback(side: String, faction_energy_results: Array) -> void:
+	for result: Dictionary in faction_energy_results:
+		var amount := int(result.get("amount", 0))
+		if amount > 0:
+			_emit_star_power_feedback(side, amount)
+			_add_battle_log(_side_label(side), "阵营星力", "%s +%d" % [
+				_hero_name(str(result.get("hero_id", ""))),
+				amount,
+			])
+
+
+func _emit_action_visual_events(acting_units: Array, action_results: Array) -> void:
+	var bus := get_node_or_null("/root/EventBus")
+	if bus == null:
+		return
+	for index in range(action_results.size()):
+		if index >= acting_units.size():
+			continue
+		var actor: Dictionary = acting_units[index]
+		var action_result: Dictionary = action_results[index]
+		if action_result.has("move") and bus.has_signal("unit_moved"):
+			var move_result: Dictionary = action_result.get("move", {})
+			var to_cell: Vector2i = move_result.get("to", Vector2i(int(actor.get("column", 0)), int(actor.get("row", 0))))
+			bus.unit_moved.emit(actor, to_cell.x, to_cell.y)
+		if str(action_result.get("action", "")) == "attack" and bus.has_signal("unit_attacked"):
+			var target := _target_unit_from_action(action_result)
+			bus.unit_attacked.emit(actor, target, int(action_result.get("damage", 0)))
+			if str(action_result.get("target_type", "")) == "master":
+				var target_side := battle_state.get_enemy_side(str(actor.get("side", "")))
+				if bus.has_signal("master_damaged"):
+					bus.master_damaged.emit(target_side, int(action_result.get("damage", 0)), battle_state.get_master_hp(target_side))
+			elif str(action_result.get("target_type", "")) == "unit":
+				if bus.has_signal("unit_damaged"):
+					bus.unit_damaged.emit(target, int(action_result.get("damage", 0)))
+				if int(target.get("hp", 0)) <= int(action_result.get("damage", 0)) and bus.has_signal("unit_died"):
+					bus.unit_died.emit(target)
+
+
+func _target_unit_from_action(action_result: Dictionary) -> Dictionary:
+	var target_snapshot = action_result.get("target_snapshot", {})
+	if target_snapshot is Dictionary and not target_snapshot.is_empty():
+		return target_snapshot
+	var target_id := str(action_result.get("target_id", ""))
+	if target_id.is_empty():
+		return {}
+	return battle_state.get_unit_by_id(target_id)
 
 
 func _log_skill_results(actor: String, skill_results: Array) -> void:
@@ -1029,9 +1735,21 @@ func _log_skill_results(actor: String, skill_results: Array) -> void:
 		_add_battle_log(actor, "技能", _skill_result_summary(skill_result))
 
 
+func _emit_skill_pose_results(source_unit: Dictionary, skill_results: Array) -> void:
+	if source_unit.is_empty() or skill_results.is_empty():
+		return
+	var bus := get_node_or_null("/root/EventBus")
+	if bus == null or not bus.has_signal("unit_skill_triggered"):
+		return
+	for skill_result: Dictionary in skill_results:
+		if bool(skill_result.get("ok", false)):
+			bus.unit_skill_triggered.emit(source_unit, skill_result)
+			_emit_faction_energy_feedback(str(source_unit.get("side", "")), skill_result.get("faction_energy_results", []))
+
+
 func _log_status_results(status_results: Array) -> void:
 	for status_result: Dictionary in status_results:
-		_add_battle_log(str(status_result.get("target_id", "单位")), "状态", "%s造成 %d 点伤害" % [
+		_add_battle_log(str(status_result.get("target_id", "单位")), "状态", "%s 造成 %d 点伤害" % [
 			_status_text(str(status_result.get("status", ""))),
 			int(status_result.get("damage", 0)),
 		])
@@ -1045,6 +1763,8 @@ func _action_label(action_result: Dictionary) -> String:
 			return "攻击"
 		"move":
 			return "移动"
+		"stunned":
+			return "眩晕"
 		_:
 			return "行动"
 
@@ -1061,6 +1781,8 @@ func _action_result_summary(action_result: Dictionary) -> String:
 				str(action_result.get("target_id", "")),
 				int(action_result.get("damage", 0)),
 			])
+	elif str(action_result.get("action", "")) == "stunned":
+		parts.append("被眩晕，跳过行动")
 	if parts.is_empty():
 		parts.append(_move_summary(action_result.get("move", {})))
 	return "; ".join(parts)
@@ -1094,6 +1816,28 @@ func _skill_result_summary(skill_result: Dictionary) -> String:
 			str(skill_result.get("target_id", "")),
 			int(skill_result.get("bonus_damage", 0)),
 		]
+	if str(skill_result.get("effect_type", "")) == "damage":
+		return "%s 对 %s 造成 %d 点伤害" % [
+			_skill_text(skill_id),
+			str(skill_result.get("target_id", "")),
+			int(skill_result.get("damage", 0)),
+		]
+	if str(skill_result.get("effect_type", "")) == "area_damage":
+		return "%s 造成范围伤害，命中 %d 个目标" % [
+			_skill_text(skill_id),
+			(skill_result.get("damaged", []) as Array).size(),
+		]
+	if str(skill_result.get("effect_type", "")) == "heal":
+		return "%s 治疗 %d 个友军" % [
+			_skill_text(skill_id),
+			(skill_result.get("healed", []) as Array).size(),
+		]
+	if str(skill_result.get("effect_type", "")) in ["shield", "stun", "attack_buff", "slow"]:
+		return "%s 对 %s 施加 %s" % [
+			_skill_text(skill_id),
+			str(skill_result.get("target_id", "")),
+			_status_text(str(skill_result.get("status_id", ""))),
+		]
 	if bool(skill_result.get("ok", false)):
 		return "%s 已触发" % _skill_text(skill_id)
 	return "%s 触发失败：%s" % [_skill_text(skill_id), _reason_text(str(skill_result.get("reason", "")))]
@@ -1113,20 +1857,20 @@ func _deployment_failure_message(reason: String, hero_id: String, column: int, r
 	var hero_name: String = _hero_name(hero_id) if not hero_id.is_empty() else "当前手牌"
 	match reason:
 		"not_deployment_zone", "not_own_deployment_zone":
-			return "当前点到 (%d,%d)，这里不是我方蓝色部署区。请把 %s 放到左侧蓝色区域空格。" % [column, row, hero_name]
+			return "当前点到 (%d,%d)，这里不是我方蓝色近端部署格。请把 %s 放到左侧蓝色近端空格。" % [column, row, hero_name]
 		"not_enough_star_power":
 			var hero_def: Dictionary = battle_state.get_hero_def(hero_id)
 			var cost: int = int(hero_def.get("cost", 0))
 			var star_power: int = battle_state.get_star_power(BoardModelScript.SIDE_LEFT)
-			return "星力不足：%s 需要 %d 星力，当前只有 %d。可先点「推进回合」恢复星力，或改选低费手牌。" % [hero_name, cost, star_power]
+			return "星力不足，%s 需要 %d 星力，当前只有 %d。" % [hero_name, cost, star_power]
 		"cell_occupied":
-			return "目标格 (%d,%d) 已有单位。请点蓝色部署区内的其他空格；再次点该单位可查看详情。" % [column, row]
+			return "目标格 (%d,%d) 已有单位，请点击蓝色近端部署区内的其他空格。" % [column, row]
 		"unknown_hero":
-			return "未选择可部署手牌。请先点击底部手牌，再点蓝色部署区空格。"
+			return "未选择可部署手牌。请先点击底部手牌，再点蓝色近端部署格。"
 		"cell_out_of_bounds":
-			return "格子 (%d,%d) 超出棋盘。请点击棋盘内蓝色部署区空格。" % [column, row]
+			return "格子 (%d,%d) 超出棋盘。请点击棋盘内蓝色近端部署格。" % [column, row]
 		_:
-			return "%s。请先选底部手牌，再点左侧蓝色部署区空格。" % _reason_text(reason)
+			return "%s。请先选底部手牌，再点左侧蓝色近端部署格。" % _reason_text(reason)
 
 
 func _format_deployment_failure_status(reason: String, hero_id: String, column: int, row: int) -> String:
@@ -1181,12 +1925,12 @@ func _format_cell_text(column: int, row: int, unit_data: Dictionary) -> String:
 	if terrain_id != TerrainSystemScript.TERRAIN_GRASS:
 		terrain_text = "\n%s" % _terrain_text(terrain_id)
 	if unit_data.is_empty():
-		var hint_text: String = "\n● 可上阵" if _should_show_recommended_deploy_cell(column, row) else ""
+		var hint_text: String = "\n可上阵" if _should_show_recommended_deploy_cell(column, row) else ""
 		return "%s\n%d,%d%s%s" % [_zone_code(column, row), column, row, terrain_text, hint_text]
 	var hero_def: Dictionary = battle_state.get_hero_def(str(unit_data.get("hero_id", "")))
 	var faction_id := str(unit_data.get("faction", hero_def.get("faction", "")))
 	var side := str(unit_data.get("side", ""))
-	var action_hint := "\n● %s" % _side_direction_text(side) if side == turn_controller.current_side else ""
+	var action_hint := "\n%s" % _side_direction_text(side) if side == turn_controller.current_side else ""
 	return "%s%s - %s\n%s%s\nHP %d/%d%s" % [
 		_side_arrow(side),
 		_side_label(side),
@@ -1244,91 +1988,208 @@ func _reset_debug_battle() -> void:
 	_hide_deploy_failure_toast()
 	_hide_unit_detail()
 	_refresh_board()
-	_update_status("调试战斗已重置。")
+	_update_status("战斗已重置。")
 
 
 func _update_hero_buttons() -> void:
-	for hero_id in _player_battle_hero_ids():
-		var hero_button: Button = hero_buttons[hero_id]
+	_refresh_hero_button_aliases()
+	for hand_index in range(STARTING_HAND_SIZE):
+		var hero_button: Button = hero_buttons.get(hand_index) as Button
+		if hero_button == null:
+			continue
+		var in_hand: bool = hand_index < player_hand.size()
+		var hero_id := str(player_hand[hand_index]) if in_hand else ""
 		var hero_def: Dictionary = battle_state.get_hero_def(hero_id)
-		var in_hand: bool = player_hand.has(hero_id)
-		var in_deck: bool = player_deck.has(hero_id)
-		var selected: bool = hero_id == selected_hero_id and in_hand
+		var in_deck: bool = not player_deck.is_empty()
+		var selected: bool = hand_index == selected_hand_index and hero_id == selected_hero_id and in_hand
 		var affordable: bool = in_hand and battle_state.can_afford(BoardModelScript.SIDE_LEFT, hero_id)
 		var selection_text := _hand_piece_state_text(selected, in_hand, in_deck, affordable)
-		hero_button.disabled = not in_hand
-		var hero_button_lines := "%s - %s" + String.chr(10) + "*%d - %s - %s"
-		hero_button.text = hero_button_lines % [
-			selection_text,
-			str(hero_def.get("name", hero_id)),
-			int(hero_def.get("cost", 0)),
-			_faction_text(str(hero_def.get("faction", ""))),
-			_hand_piece_suffix(in_hand, in_deck, affordable),
-		]
-		_apply_hand_piece_button_style(hero_button, hero_id, selected, in_hand, affordable)
+		hero_button.visible = true
+		hero_button.disabled = not in_hand or not affordable
+		hero_button.text = ""
+		_update_hand_card_content(hero_button, hero_def, selection_text, in_hand, in_deck, affordable)
+		_apply_hand_piece_button_style(hero_button, hand_index, hero_id, selected, in_hand, affordable)
+	_update_next_draw_slot()
+
+
+func _refresh_hero_button_aliases() -> void:
+	for hero_id in _player_battle_hero_ids():
+		if not hero_buttons.has(hero_id):
+			hero_buttons[hero_id] = hero_buttons.get(0)
+	for hand_index in range(mini(STARTING_HAND_SIZE, player_hand.size())):
+		var hero_id := str(player_hand[hand_index])
+		hero_buttons[hero_id] = hero_buttons.get(hand_index)
+
+
+func _update_next_draw_slot() -> void:
+	var next_slot := hero_button_row.get_node_or_null("NextDrawSlot") as PanelContainer
+	if next_slot == null:
+		return
+	var next_label := next_slot.get_node_or_null("NextDrawLabel") as Label
+	var visible_hand_count: int = player_hand.size()
+	next_slot.visible = visible_hand_count < STARTING_HAND_SIZE or not player_deck.is_empty()
+	if next_label == null:
+		return
+	if player_deck.is_empty():
+		next_label.text = "牌库已空\n空槽"
+	else:
+		next_label.text = "下一张\n自动补牌"
+
+
+func _update_hand_card_content(hero_button: Button, hero_def: Dictionary, state_text: String, in_hand: bool, in_deck: bool, affordable: bool) -> void:
+	var container := hero_button.get_node_or_null("HandCardContainer") as Control
+	if container == null:
+		return
+	var name_label := container.get_node_or_null("NameBand/NameLabel") as Label
+	var legacy_name_label := container.get_node_or_null("TopRow/NameLabel") as Label
+	var cost_label := container.get_node_or_null("TopRow/CostLabel") as Label
+	var portrait := container.get_node_or_null("PortraitStage/Portrait") as TextureRect
+	var portrait_glow := container.get_node_or_null("PortraitStage/PortraitGlow") as ColorRect
+	var legacy_portrait := container.get_node_or_null("Portrait") as TextureRect
+	var meta_label := container.get_node_or_null("MetaLabel") as Label
+	var state_label := container.get_node_or_null("PortraitStage/StateLabel") as Label
+	var legacy_state_label := container.get_node_or_null("StateLabel") as Label
+	var cost_badge := container.get_node_or_null("CostBadge/CostBadgeInner") as HBoxContainer
+	var stats_row := container.get_node_or_null("BottomStatBar") as HBoxContainer
+	var badge_row := container.get_node_or_null("HeroCardBody/InfoColumn/BadgeRow") as HBoxContainer
+	var legacy_stats_row := container.get_node_or_null("StatsRow") as HBoxContainer
+	if name_label != null:
+		name_label.text = str(hero_def.get("name", "空槽")) if in_hand else "空槽"
+	if legacy_name_label != null:
+		legacy_name_label.text = str(hero_def.get("name", "空槽")) if in_hand else "空槽"
+	if cost_label != null:
+		cost_label.text = "%d" % int(hero_def.get("cost", 0)) if in_hand else "-"
+	if portrait != null:
+		var portrait_path := str(hero_def.get("portrait", ""))
+		portrait.texture = BattleUIAssetsScript.texture(portrait_path) if not portrait_path.is_empty() else null
+		portrait.self_modulate = Color(1.08, 1.08, 1.05, 1.0) if affordable else Color(0.45, 0.46, 0.50, 0.62)
+		if legacy_portrait != null:
+			legacy_portrait.texture = portrait.texture
+	if portrait_glow != null:
+		portrait_glow.color = _hand_card_rarity_glow(hero_def).darkened(0.20)
+		portrait_glow.color.a = 0.18 if affordable and in_hand else 0.07
+	if meta_label != null:
+		meta_label.text = "%s / %s" % [_faction_text(str(hero_def.get("faction", ""))), _class_text(_hero_class_id(hero_def))] if in_hand else "等待补牌"
+		meta_label.visible = false
+	if badge_row != null:
+		_update_hand_badge_row(badge_row, hero_def, in_hand)
+	if cost_badge != null:
+		_set_hand_icon_value(cost_badge, "CostItem", BattleUIAssetsScript.attribute_icon("cost"), "%d" % int(hero_def.get("cost", 0)) if in_hand else "-")
+	if stats_row != null:
+		_update_hand_stats_row(stats_row, hero_def, in_hand)
+	if legacy_stats_row != null:
+		_update_hand_stats_row(legacy_stats_row, hero_def, in_hand)
+		_update_hand_badge_row(legacy_stats_row, hero_def, in_hand)
+	if state_label != null:
+		state_label.text = state_text if in_hand else ("牌库候补" if in_deck else "空槽")
+		var state_color := BattleUIThemeScript.GOLD if state_text == "已选择" else (Color(0.72, 0.96, 1.0, 1.0) if affordable and in_hand else BattleUIThemeScript.TEXT_MUTED)
+		state_label.add_theme_color_override("font_color", state_color)
+		state_label.visible = state_text == "已选择" or not affordable or not in_hand
+	if legacy_state_label != null:
+		legacy_state_label.text = state_text if in_hand else ("牌库候补" if in_deck else "空槽")
 
 
 func _hand_piece_state_text(selected: bool, in_hand: bool, in_deck: bool, affordable: bool) -> String:
 	if selected:
-		return "● 已选上阵"
+		return "已选择"
 	if not in_hand:
-		return "牌库候补" if in_deck else "已出战"
+		return "牌库候补" if in_deck else "空槽"
 	return "可部署" if affordable else "星力不足"
 
 
 func _hand_piece_suffix(in_hand: bool, in_deck: bool, affordable: bool) -> String:
 	if not in_hand:
-		return "牌库候补" if in_deck else "已出"
+		return "牌库候补" if in_deck else "空槽"
 	return "点蓝区部署" if affordable else "先推进回合"
 
 
-func _apply_hand_piece_button_style(hero_button: Button, hero_id: String, selected: bool, enabled: bool, affordable: bool) -> void:
-	var style: StyleBoxFlat = _hero_button_styles.get(hero_id)
-	if style == null:
+func _update_hand_stats_row(stats_row: HBoxContainer, hero_def: Dictionary, in_hand: bool) -> void:
+	_set_hand_icon_value(stats_row, "HpItem", BattleUIAssetsScript.attribute_icon("hp"), "%d" % int(hero_def.get("max_hp", 0)) if in_hand else "-")
+	_set_hand_icon_value(stats_row, "AttackItem", BattleUIAssetsScript.attribute_icon("attack"), "%d" % int(hero_def.get("attack", 0)) if in_hand else "-")
+	_set_hand_icon_value(stats_row, "CostItem", BattleUIAssetsScript.attribute_icon("cost"), "%d" % int(hero_def.get("cost", 0)) if in_hand else "-")
+
+
+func _update_hand_badge_row(badge_row: HBoxContainer, hero_def: Dictionary, in_hand: bool) -> void:
+	_set_hand_icon_value(badge_row, "FactionItem", BattleUIAssetsScript.faction_icon(str(hero_def.get("faction", ""))) if in_hand else null, "")
+	_set_hand_icon_value(badge_row, "ClassItem", BattleUIAssetsScript.class_icon(_hero_class_id(hero_def)) if in_hand else null, "")
+
+
+func _set_hand_icon_value(stats_row: HBoxContainer, item_name: String, texture: Texture2D, value_text: String) -> void:
+	var item := stats_row.get_node_or_null(item_name) as HBoxContainer
+	if item == null:
 		return
+	var icon := item.get_node_or_null("Icon") as TextureRect
+	var value := item.get_node_or_null("Value") as Label
+	if icon != null:
+		icon.texture = texture
+	if value != null:
+		value.text = value_text
+
+
+func _apply_hand_piece_button_style(hero_button: Button, hand_index: int, hero_id: String, selected: bool, enabled: bool, affordable: bool) -> void:
 	var hero_def: Dictionary = battle_state.get_hero_def(hero_id)
-	var base_color: Color = StarPaletteScript.faction_color(str(hero_def.get("faction", "")))
-	# 根据状态微调颜色和边框
+	var rarity_tint: Color = _hand_card_rarity_tint(hero_def)
+	var rarity_glow: Color = _hand_card_rarity_glow(hero_def)
+	var style: StyleBoxFlat = _hero_button_styles.get(hand_index)
+	if style == null:
+		style = BattleUIAssetsScript.hand_card_style()
+		_hero_button_styles[hand_index] = style
 	if selected:
-		style.bg_color = base_color.lightened(0.24)
-		style.border_color = StarPaletteScript.HIGHLIGHT_SELECTED
-		style.set_border_width_all(7)
-		style.content_margin_left = 14
-		style.content_margin_top = 8
-		style.content_margin_right = 14
-		style.content_margin_bottom = 8
+		style.bg_color = Color(0.060, 0.105, 0.185, 0.90).lerp(rarity_tint, 0.34)
+		style.border_color = BattleUIThemeScript.CARD_SELECTED_BORDER.lerp(rarity_glow, 0.35)
+		style.shadow_color = rarity_glow.darkened(0.25)
+		style.shadow_size = 9
 	elif enabled and affordable:
-		style.bg_color = base_color.lightened(0.08)
-		style.border_color = Color(0.42, 1.0, 0.76, 0.88)
-		style.set_border_width_all(5)
-		style.content_margin_left = 12
-		style.content_margin_top = 6
-		style.content_margin_right = 12
-		style.content_margin_bottom = 6
+		style.bg_color = Color(0.065, 0.112, 0.190, 0.86).lerp(rarity_tint, 0.38)
+		style.border_color = BattleUIThemeScript.GOLD_SOFT.lerp(rarity_glow, 0.32)
+		style.shadow_color = Color(0.17, 0.52, 0.74, 0.24)
+		style.shadow_size = 6
 	elif enabled and not affordable:
-		style.bg_color = base_color.darkened(0.18)
-		style.border_color = Color(0.80, 0.74, 0.60, 0.70)
-		style.set_border_width_all(3)
-		style.content_margin_left = 12
-		style.content_margin_top = 6
-		style.content_margin_right = 12
-		style.content_margin_bottom = 6
+		style.bg_color = Color(0.026, 0.034, 0.056, 0.50).lerp(rarity_tint.darkened(0.42), 0.14)
+		style.border_color = BattleUIThemeScript.CARD_DISABLED_BORDER
+		style.shadow_color = Color(0, 0, 0, 0.12)
+		style.shadow_size = 2
 	else:
-		style.bg_color = base_color.darkened(0.42)
-		style.border_color = Color(0.80, 0.74, 0.60, 0.70)
-		style.set_border_width_all(3)
-		style.content_margin_left = 12
-		style.content_margin_top = 6
-		style.content_margin_right = 12
-		style.content_margin_bottom = 6
-	hero_button.custom_minimum_size = Vector2(290, 116) if selected else (Vector2(274, 104) if enabled and affordable else Vector2(258, 98))
+		style.bg_color = Color(0.024, 0.030, 0.048, 0.46)
+		style.border_color = BattleUIThemeScript.CARD_DISABLED_BORDER.darkened(0.20)
+		style.shadow_color = Color(0, 0, 0, 0.10)
+		style.shadow_size = 1
+	hero_button.custom_minimum_size = Vector2(181, 200) if selected else Vector2(172, 190)
 	hero_button.add_theme_stylebox_override("normal", style)
 	hero_button.add_theme_stylebox_override("hover", style)
 	hero_button.add_theme_stylebox_override("pressed", style)
 	hero_button.add_theme_stylebox_override("disabled", style)
+	hero_button.self_modulate = Color(1, 1, 1, 1) if enabled and affordable else Color(0.50, 0.52, 0.56, 0.68)
 	hero_button.add_theme_color_override("font_color", StarPaletteScript.TEXT_CREAM if selected else (StarPaletteScript.TEXT_GREEN_READY if enabled and affordable else StarPaletteScript.TEXT_CREAM))
 	hero_button.add_theme_color_override("font_disabled_color", StarPaletteScript.TEXT_SECONDARY)
 	hero_button.add_theme_font_size_override("font_size", 26 if selected else 24)
+
+
+func _hand_card_rarity_id(hero_def: Dictionary) -> String:
+	var rarity := str(hero_def.get("rarity", "rare")).to_lower()
+	if rarity == "legendary" or rarity == "legend":
+		return "legend"
+	if rarity == "epic":
+		return "epic"
+	return "rare"
+
+
+func _hand_card_rarity_tint(hero_def: Dictionary) -> Color:
+	var rarity := _hand_card_rarity_id(hero_def)
+	if rarity == "legend":
+		return BattleUIThemeScript.CARD_LEGEND_TINT
+	if rarity == "epic":
+		return BattleUIThemeScript.CARD_EPIC_TINT
+	return BattleUIThemeScript.CARD_RARE_TINT
+
+
+func _hand_card_rarity_glow(hero_def: Dictionary) -> Color:
+	var rarity := _hand_card_rarity_id(hero_def)
+	if rarity == "legend":
+		return BattleUIThemeScript.CARD_LEGEND_GLOW
+	if rarity == "epic":
+		return BattleUIThemeScript.CARD_EPIC_GLOW
+	return BattleUIThemeScript.CARD_RARE_GLOW
 
 
 func _return_home() -> void:
@@ -1423,16 +2284,37 @@ func _deck_for_side(side: String) -> Array:
 func _consume_hero_from_hand(side: String, hero_id: String) -> void:
 	battle_deck.consume_from_hand(side, hero_id)
 	_sync_card_pile_references()
+	_draw_cards(side, maxi(0, STARTING_HAND_SIZE - _hand_for_side(side).size()))
+
+
+func _consume_selected_hand_slot(side: String, fallback_hero_id: String) -> void:
+	var hand_index := selected_hand_index
+	if side != BoardModelScript.SIDE_LEFT or hand_index < 0 or hand_index >= _hand_for_side(side).size() or str(_hand_for_side(side)[hand_index]) != fallback_hero_id:
+		hand_index = _hand_for_side(side).find(fallback_hero_id)
+	_consume_hand_index(side, hand_index, fallback_hero_id)
+
+
+func _consume_hand_index(side: String, hand_index: int, fallback_hero_id: String = "") -> void:
+	var consumed := battle_deck.consume_hand_index(side, hand_index)
+	if consumed.is_empty() and not fallback_hero_id.is_empty():
+		battle_deck.consume_from_hand(side, fallback_hero_id)
+	_sync_card_pile_references()
+	_draw_cards(side, maxi(0, STARTING_HAND_SIZE - _hand_for_side(side).size()))
+	if side == BoardModelScript.SIDE_LEFT:
+		selected_hand_index = -1
+
 
 func _discard_for_side(side: String) -> Array:
 	return battle_deck.discard_for_side(side)
 
 func _select_next_available_hero() -> void:
-	if player_hand.has(selected_hero_id):
+	if selected_hand_index >= 0 and selected_hand_index < player_hand.size() and str(player_hand[selected_hand_index]) == selected_hero_id:
 		return
 	if player_hand.is_empty():
 		selected_hero_id = ""
+		selected_hand_index = -1
 		return
+	selected_hand_index = 0
 	selected_hero_id = str(player_hand[0])
 
 func _hero_name(hero_id: String) -> String:
@@ -1440,16 +2322,55 @@ func _hero_name(hero_id: String) -> String:
 	return str(hero_def.get("name", hero_id))
 
 
+func _hero_class_id(hero_def: Dictionary) -> String:
+	return str(hero_def.get("profession", hero_def.get("class", "")))
+
+
+func _rarity_text(rarity_id: String) -> String:
+	match rarity_id:
+		"rare":
+			return "稀有"
+		"epic":
+			return "史诗"
+		"legendary", "legend":
+			return "传说"
+		"summon":
+			return "召唤"
+		_:
+			return rarity_id if not rarity_id.is_empty() else "未知"
+
+
+func _hero_background_text(hero_def: Dictionary) -> String:
+	var background := str(hero_def.get("background", ""))
+	if background.is_empty():
+		background = str(hero_def.get("bio", ""))
+	if background.is_empty():
+		background = str(hero_def.get("description", ""))
+	if background.is_empty():
+		background = "背景介绍暂未配置。"
+	return background
+
+
 func _player_battle_hero_ids() -> Array:
 	if configured_player_deck.is_empty():
-		return STARTING_PLAYER_DECK.duplicate()
+		return _default_player_deck_ids()
 	return configured_player_deck.duplicate()
 
 
 func _enemy_battle_hero_ids() -> Array:
 	if configured_enemy_deck.is_empty():
-		return STARTING_ENEMY_DECK.duplicate()
+		return _default_enemy_deck_ids()
 	return configured_enemy_deck.duplicate()
+
+
+func _default_player_deck_ids() -> Array:
+	return HeroDataLoaderScript.all_hero_ids(false)
+
+
+func _default_enemy_deck_ids() -> Array:
+	var ids: Array = HeroDataLoaderScript.all_hero_ids(false)
+	ids.reverse()
+	return ids
 
 
 func _validated_deck_from_data(value, fallback: Array) -> Array:
@@ -1468,7 +2389,9 @@ func _validated_deck_from_data(value, fallback: Array) -> Array:
 func _route_to_result(battle_result: Dictionary) -> void:
 	var event_bus := get_node_or_null("/root/EventBus")
 	if event_bus:
-		event_bus.screen_changed.emit(RESULT_SCREEN, battle_result)
+		var result_payload := battle_result.duplicate(true)
+		result_payload["battle_log"] = battle_log_entries.duplicate()
+		event_bus.screen_changed.emit(RESULT_SCREEN, result_payload)
 
 
 func _save_current_state() -> void:
@@ -1549,7 +2472,7 @@ func _show_unit_detail(unit_data: Dictionary) -> void:
 func _show_card_detail(hero_id: String) -> void:
 	selected_detail_unit_id = ""
 	var hero_def: Dictionary = battle_state.get_hero_def(hero_id)
-	unit_detail_title.text = "卡牌 - %s - 费用 *%d - 阵营 %s" % [
+	unit_detail_title.text = "卡牌 - %s - 费用 %d - 阵营 %s" % [
 		str(hero_def.get("name", hero_id)),
 		int(hero_def.get("cost", 0)),
 		_faction_text(str(hero_def.get("faction", ""))),
@@ -1591,20 +2514,25 @@ func _format_card_detail(hero_id: String) -> String:
 	if hero_def.is_empty():
 		return "[b]卡牌说明[/b]：未知卡牌 %s" % hero_id
 	return "\n".join([
-		"[b]点击反馈[/b]：已选中此手牌；点左侧蓝色部署区空格即可上阵。",
-		"[b]部署提示[/b]：费用足够时直接部署；星力不足时可先点「推进回合」回星。",
-		"[b]费用[/b]：%d 星力｜[b]阵营[/b]：%s" % [
-			int(hero_def.get("cost", 0)),
+		"[b]%s[/b]" % str(hero_def.get("name", hero_id)),
+		"[b]阵营[/b]：%s｜[b]职业[/b]：%s｜[b]稀有度[/b]：%s" % [
 			_faction_text(str(hero_def.get("faction", ""))),
+			_class_text(_hero_class_id(hero_def)),
+			_rarity_text(str(hero_def.get("rarity", ""))),
 		],
-		"[b]基础[/b]：生命 %d｜攻击 %d｜射程 %d｜移动 %d" % [
-			int(hero_def.get("max_hp", 0)),
+		"[b]费用[/b]：%d｜[b]生命[/b]：%d｜[b]攻击[/b]：%d" % [
+			int(hero_def.get("cost", 0)),
+			int(hero_def.get("max_hp", hero_def.get("hp", 0))),
 			int(hero_def.get("attack", 0)),
-			int(hero_def.get("range", 0)),
-			int(hero_def.get("move", 0)),
 		],
-		"[b]格挡[/b]：物理 %d｜法术 %d" % [int(hero_def.get("physical_block", 0)), int(hero_def.get("magic_block", 0))],
+		"[b]移动[/b]：%d｜[b]射程[/b]：%d｜[b]格挡[/b]：物理 %d / 法术 %d" % [
+			int(hero_def.get("move", 0)),
+			int(hero_def.get("range", 0)),
+			int(hero_def.get("physical_block", 0)),
+			int(hero_def.get("magic_block", 0)),
+		],
 		"[b]技能[/b]：%s" % _format_hero_skill_descriptions(hero_def),
+		"[b]背景[/b]：%s" % _hero_background_text(hero_def),
 	])
 
 
@@ -1647,8 +2575,6 @@ func _class_text(class_id: String) -> String:
 			return "坦克"
 		"archer":
 			return "射手"
-		"guard":
-			return "武卫"
 		"assassin":
 			return "刺客"
 		_:
@@ -1799,8 +2725,6 @@ func _class_icon(class_id: String) -> String:
 			return "盾"
 		"archer":
 			return "弓"
-		"guard":
-			return "卫"
 		"assassin":
 			return "刺"
 		_:
@@ -1828,7 +2752,7 @@ func _cell_key(column: int, row: int) -> String:
 
 
 func _unit_display_name(unit_data: Dictionary) -> String:
-	return str(unit_data.get("name", unit_data.get("hero_id", "鍗曚綅")))
+	return str(unit_data.get("name", unit_data.get("hero_id", "单位")))
 
 
 func _unit_side_color(side: String) -> Color:

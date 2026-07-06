@@ -5,6 +5,7 @@ const BoardModelScript: GDScript = preload("res://scripts/battle/BoardModel.gd")
 const BattleStatsScript: GDScript = preload("res://scripts/battle/BattleStats.gd")
 const DataLoaderScript: GDScript = preload("res://scripts/data/DataLoader.gd")
 const DamageSystemScript: GDScript = preload("res://scripts/battle/DamageSystem.gd")
+const FactionEnergySystemScript: GDScript = preload("res://scripts/battle/FactionEnergySystem.gd")
 const SkillSystemScript: GDScript = preload("res://scripts/battle/SkillSystem.gd")
 const TerrainSystemScript: GDScript = preload("res://scripts/battle/TerrainSystem.gd")
 
@@ -23,6 +24,7 @@ var placed_units: Dictionary = {}
 var next_unit_sequence: int = 1
 var side_turn_effects: Dictionary = {}
 var battle_stats: BattleStats = BattleStatsScript.new()
+var faction_energy_system = FactionEnergySystemScript.new()
 
 func _init() -> void:
 	reset()
@@ -38,6 +40,7 @@ func reset() -> void:
 	placed_units.clear()
 	next_unit_sequence = 1
 	battle_stats.reset()
+	faction_energy_system.reset()
 	side_turn_effects = {
 		SIDE_LEFT: {},
 		SIDE_RIGHT: {},
@@ -72,6 +75,22 @@ func change_star_power(side: String, delta: int) -> int:
 func restore_star_power(side: String, amount: int) -> int:
 	return change_star_power(side, maxi(0, amount))
 
+
+func start_faction_energy_side_turn(side: String) -> Array:
+	return faction_energy_system.start_side_turn(self, side)
+
+
+func on_skill_triggered(source_unit: Dictionary, skill_def: Dictionary) -> Array:
+	return faction_energy_system.on_skill_triggered(self, source_unit, skill_def)
+
+
+func on_unit_defeated(defeated_unit: Dictionary, attacker: Variant) -> Array:
+	return faction_energy_system.on_unit_defeated(self, defeated_unit, attacker)
+
+
+func on_star_spent(side: String, amount: int) -> Array:
+	return faction_energy_system.on_star_spent(self, side, amount)
+
 func get_master_hp(side: String) -> int:
 	return int(master_hp.get(side, 0))
 
@@ -87,8 +106,31 @@ func get_hero_def(hero_id: String) -> Dictionary:
 	var heroes: Array = DataLoaderScript.data.get("heroes", [])
 	for hero: Dictionary in heroes:
 		if str(hero.get("id", "")) == hero_id:
-			return hero
+			return _normalized_hero_def(hero)
 	return {}
+
+
+func _normalized_hero_def(hero: Dictionary) -> Dictionary:
+	var normalized := hero.duplicate(true)
+	if not normalized.has("profession"):
+		normalized["profession"] = str(normalized.get("class", ""))
+	if not normalized.has("class"):
+		normalized["class"] = str(normalized.get("profession", ""))
+	if not normalized.has("hp"):
+		normalized["hp"] = int(normalized.get("max_hp", 1))
+	if not normalized.has("max_hp"):
+		normalized["max_hp"] = int(normalized.get("hp", 1))
+	if not normalized.has("camp"):
+		normalized["camp"] = str(normalized.get("faction", ""))
+	if not normalized.has("faction"):
+		normalized["faction"] = str(normalized.get("camp", ""))
+	if not normalized.has("icon"):
+		normalized["icon"] = str(normalized.get("portrait", ""))
+	if not normalized.has("portrait"):
+		normalized["portrait"] = str(normalized.get("icon", ""))
+	if not normalized.has("background"):
+		normalized["background"] = str(normalized.get("design_note", ""))
+	return normalized
 
 func can_afford(side: String, hero_id: String) -> bool:
 	var hero_def: Dictionary = get_hero_def(hero_id)
@@ -123,7 +165,9 @@ func deploy_hero(hero_id: String, side: String, column: int, row: int) -> Dictio
 	var placed_unit: Dictionary = place_result.unit
 	placed_units[unit_id] = placed_unit
 	change_star_power(side, -cost)
+	var faction_energy_results: Array = on_star_spent(side, cost)
 	battle_stats.record_deployment(side)
+	_record_passive_skill_presence(placed_unit)
 	var skill_results: Array = trigger_skill_event(SkillSystemScript.TRIGGER_DEPLOY, {"source_unit": placed_unit})
 	pass  # EventBus emit moved to BattleScreen
 
@@ -134,6 +178,7 @@ func deploy_hero(hero_id: String, side: String, column: int, row: int) -> Dictio
 		"cost": cost,
 		"remaining_star_power": get_star_power(side),
 		"skill_results": skill_results,
+		"faction_energy_results": faction_energy_results,
 	}
 
 func build_unit_data(hero_id: String, hero_def: Dictionary) -> Dictionary:
@@ -149,7 +194,7 @@ func build_unit_data(hero_id: String, hero_def: Dictionary) -> Dictionary:
 		"attack": int(hero_def.get("attack", 0)),
 		"range": int(hero_def.get("range", 1)),
 		"move": int(hero_def.get("move", 0)),
-		"class": str(hero_def.get("class", "")),
+		"class": str(hero_def.get("profession", hero_def.get("class", ""))),
 		"physical_block": int(hero_def.get("physical_block", 0)),
 		"magic_block": int(hero_def.get("magic_block", 0)),
 		"damage_type": str(hero_def.get("damage_type", "physical")),
@@ -224,6 +269,10 @@ func get_enemy_units(side: String) -> Array:
 func get_unit_by_id(unit_id: String) -> Dictionary:
 	return placed_units.get(unit_id, {})
 
+
+func get_unit_at(column: int, row: int) -> Dictionary:
+	return board.get_unit_at(column, row)
+
 func move_unit(unit: Dictionary, column: int, row: int) -> Dictionary:
 	var unit_id := str(unit.get("instance_id", ""))
 	var move_result: Dictionary = board.move_unit(unit_id, column, row)
@@ -234,8 +283,10 @@ func move_unit(unit: Dictionary, column: int, row: int) -> Dictionary:
 func apply_damage_to_unit(unit: Dictionary, raw_damage: int, damage_type: String = "physical", attacker: Variant = null) -> int:
 	var damage: int = DamageSystemScript.calculate_unit_damage(raw_damage, damage_type, unit, terrain_system)
 	damage = _apply_adjacent_guard_reduction(unit, damage, damage_type)
+	damage = _absorb_shield_damage(unit, damage)
 	var unit_id := str(unit.get("instance_id", ""))
 	var was_defeated := int(unit.get("hp", 0)) > 0 and int(unit.get("hp", 0)) - damage <= 0
+	var defeated_snapshot: Dictionary = unit.duplicate(true)
 	unit["hp"] = maxi(0, int(unit.get("hp", 0)) - damage)
 	if int(unit.get("hp", 0)) <= 0:
 		remove_unit(unit_id)
@@ -244,7 +295,7 @@ func apply_damage_to_unit(unit: Dictionary, raw_damage: int, damage_type: String
 	if attacker is Dictionary:
 		pass  # EventBus emit moved to BattleScreen
 	if was_defeated:
-		pass  # EventBus emit moved to BattleScreen
+		on_unit_defeated(defeated_snapshot, attacker)
 	return damage
 
 func trigger_skill_event(trigger: String, context: Dictionary = {}) -> Array:
@@ -274,6 +325,7 @@ func get_unit_attack(unit: Dictionary) -> int:
 	var attack := int(unit.get("attack", 0))
 	attack += int(terrain_system.get_attack_delta(unit))
 	attack += get_side_attack_delta(side, unit)
+	attack += _status_value(unit, "attack_buff")
 	return maxi(0, attack)
 
 func get_movement_cost(unit: Dictionary, column: int, row: int) -> int:
@@ -283,6 +335,7 @@ func get_unit_move(unit: Dictionary) -> int:
 	var side := str(unit.get("side", ""))
 	var move_value := int(unit.get("move", 0))
 	move_value += get_side_move_delta(side, unit)
+	move_value -= _status_value(unit, "slow")
 	return maxi(0, move_value)
 
 func add_side_turn_effect(side: String, effect_id: String, effect_data: Dictionary) -> void:
@@ -332,12 +385,45 @@ func _apply_adjacent_guard_reduction(target_unit: Dictionary, damage: int, damag
 			continue
 		if int(ally.get("hp", 0)) <= 0:
 			continue
-		if not ally.get("skill_ids", []).has("zhangfei_guard"):
-			continue
 		var distance := absi(int(ally.get("column", 0)) - target_column) + absi(int(ally.get("row", 0)) - target_row)
-		if distance == 1:
-			reduction = maxi(reduction, _get_skill_param_int("zhangfei_guard", "damage_reduction", 0))
+		if distance != 1:
+			continue
+		for skill_id in ally.get("skill_ids", []):
+			var skill_def := _get_skill_def(str(skill_id))
+			if str(skill_def.get("effect_type", "")) != "adjacent_guard":
+				continue
+			reduction = maxi(reduction, int(skill_def.get("params", {}).get("damage_reduction", 0)))
 	return maxi(0, damage - reduction)
+
+
+func _absorb_shield_damage(unit: Dictionary, damage: int) -> int:
+	if damage <= 0:
+		return 0
+	var statuses = unit.get("statuses", {})
+	if not (statuses is Dictionary) or not statuses.has("shield"):
+		return damage
+	var shield_status: Dictionary = statuses.get("shield", {})
+	var shield_value := int(shield_status.get("value", 0))
+	if shield_value <= 0:
+		statuses.erase("shield")
+		unit["statuses"] = statuses
+		return damage
+	var absorbed: int = mini(shield_value, damage)
+	shield_status["value"] = shield_value - absorbed
+	if int(shield_status.get("value", 0)) <= 0:
+		statuses.erase("shield")
+	else:
+		statuses["shield"] = shield_status
+	unit["statuses"] = statuses
+	return damage - absorbed
+
+
+func _status_value(unit: Dictionary, status_id: String) -> int:
+	var statuses = unit.get("statuses", {})
+	if not (statuses is Dictionary) or not statuses.has(status_id):
+		return 0
+	var status: Dictionary = statuses.get(status_id, {})
+	return int(status.get("value", 0))
 
 func _get_skill_param_int(skill_id: String, param_name: String, default_value: int = 0) -> int:
 	for skill_def: Dictionary in get_skill_defs():
@@ -346,6 +432,20 @@ func _get_skill_param_int(skill_id: String, param_name: String, default_value: i
 		var params: Dictionary = skill_def.get("params", {})
 		return int(params.get(param_name, default_value))
 	return default_value
+
+
+func _get_skill_def(skill_id: String) -> Dictionary:
+	for skill_def: Dictionary in get_skill_defs():
+		if str(skill_def.get("id", "")) == skill_id:
+			return skill_def
+	return {}
+
+
+func _record_passive_skill_presence(unit: Dictionary) -> void:
+	for skill_id in unit.get("skill_ids", []):
+		var skill_def := _get_skill_def(str(skill_id))
+		if str(skill_def.get("trigger", "")) == "passive":
+			battle_stats.record_skill_trigger(unit, str(skill_id))
 
 func _side_effect_applies_to_unit(effect: Dictionary, unit: Dictionary) -> bool:
 	var required_class := str(effect.get("class", ""))

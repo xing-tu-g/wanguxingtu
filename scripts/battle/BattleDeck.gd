@@ -18,20 +18,35 @@ var discards: Dictionary = {
 var recycle_discard_on_empty: bool = false
 
 
-func setup(left_deck_ids: Array, right_deck_ids: Array, starting_hand_size: int = 0, recycle_discard: bool = false) -> void:
+func setup(left_deck_ids: Array, right_deck_ids: Array, starting_hand_size: int = 0, recycle_discard: bool = false, shuffle_seed: int = -1) -> void:
 	recycle_discard_on_empty = recycle_discard
-	reset(left_deck_ids, right_deck_ids)
+	reset(left_deck_ids, right_deck_ids, shuffle_seed)
 	draw(BoardModelScript.SIDE_LEFT, starting_hand_size)
 	draw(BoardModelScript.SIDE_RIGHT, starting_hand_size)
 
 
-func reset(left_deck_ids: Array, right_deck_ids: Array) -> void:
+func reset(left_deck_ids: Array, right_deck_ids: Array, shuffle_seed: int = -1) -> void:
 	decks[BoardModelScript.SIDE_LEFT] = left_deck_ids.duplicate()
 	decks[BoardModelScript.SIDE_RIGHT] = right_deck_ids.duplicate()
+	_shuffle_deck(decks[BoardModelScript.SIDE_LEFT], shuffle_seed)
+	_shuffle_deck(decks[BoardModelScript.SIDE_RIGHT], shuffle_seed + 1 if shuffle_seed >= 0 else -1)
 	hands[BoardModelScript.SIDE_LEFT] = []
 	hands[BoardModelScript.SIDE_RIGHT] = []
 	discards[BoardModelScript.SIDE_LEFT] = []
 	discards[BoardModelScript.SIDE_RIGHT] = []
+
+
+func _shuffle_deck(deck: Array, shuffle_seed: int = -1) -> void:
+	var rng := RandomNumberGenerator.new()
+	if shuffle_seed >= 0:
+		rng.seed = shuffle_seed
+	else:
+		rng.randomize()
+	for index in range(deck.size() - 1, 0, -1):
+		var swap_index: int = rng.randi_range(0, index)
+		var current = deck[index]
+		deck[index] = deck[swap_index]
+		deck[swap_index] = current
 
 
 func draw(side: String, count: int) -> Array:
@@ -71,6 +86,16 @@ func consume_from_hand(side: String, hero_id: String) -> bool:
 	hand.erase(hero_id)
 	discard_for_side(side).append(hero_id)
 	return true
+
+
+func consume_hand_index(side: String, hand_index: int) -> String:
+	var hand := hand_for_side(side)
+	if hand_index < 0 or hand_index >= hand.size():
+		return ""
+	var hero_id := str(hand[hand_index])
+	hand.remove_at(hand_index)
+	discard_for_side(side).append(hero_id)
+	return hero_id
 
 
 func has_no_deck_hand(side: String) -> bool:

@@ -2,12 +2,15 @@ param(
 	[string]$RootDir = (Get-Location).Path,
 	[string]$Manifest = "tests/test_manifest_mvp.txt",
 	[string]$GodotBin = "godot.cmd",
-	[string]$LogFile = (Join-Path $env:TEMP "wanguxingtu-mainline-tests.log")
+	[string]$LogFile = (Join-Path (Join-Path (Get-Location).Path "tmp") "wanguxingtu-mainline-tests.log"),
+	[switch]$EnableGodotCrashHandler
 )
 
 $ErrorActionPreference = "Stop"
 
 Set-Location $RootDir
+$TmpDir = Join-Path $RootDir "tmp"
+New-Item -ItemType Directory -Force -Path $TmpDir | Out-Null
 Set-Content -Path $LogFile -Value "" -Encoding UTF8
 
 function Write-Log {
@@ -37,8 +40,36 @@ foreach ($testPath in $tests) {
 	}
 
 	Write-Log "== $testPath =="
-	$output = & $GodotBin --headless --path $RootDir --script "res://$testPath" 2>&1
-	$status = $LASTEXITCODE
+	$runId = [guid]::NewGuid().ToString("N")
+	$stdoutFile = Join-Path $TmpDir ("wanguxingtu-test-stdout-{0}.log" -f $runId)
+	$stderrFile = Join-Path $TmpDir ("wanguxingtu-test-stderr-{0}.log" -f $runId)
+	$godotLogFile = Join-Path $TmpDir ("wanguxingtu-godot-{0}.log" -f $runId)
+	$godotArgs = @("--headless", "--path", $RootDir, "--log-file", $godotLogFile)
+	if (-not $EnableGodotCrashHandler) {
+		$godotArgs += "--disable-crash-handler"
+	}
+	$godotArgs += @("--script", "res://$testPath")
+	$process = Start-Process -FilePath $GodotBin `
+		-ArgumentList $godotArgs `
+		-NoNewWindow `
+		-Wait `
+		-PassThru `
+		-RedirectStandardOutput $stdoutFile `
+		-RedirectStandardError $stderrFile
+	$status = $process.ExitCode
+	$output = @()
+	if (Test-Path -LiteralPath $stdoutFile) {
+		$output += Get-Content -Encoding UTF8 -LiteralPath $stdoutFile
+		Remove-Item -LiteralPath $stdoutFile -Force
+	}
+	if (Test-Path -LiteralPath $stderrFile) {
+		$output += Get-Content -Encoding UTF8 -LiteralPath $stderrFile
+		Remove-Item -LiteralPath $stderrFile -Force
+	}
+	if (Test-Path -LiteralPath $godotLogFile) {
+		$output += Get-Content -Encoding UTF8 -LiteralPath $godotLogFile
+		Remove-Item -LiteralPath $godotLogFile -Force
+	}
 	$output | Tee-Object -FilePath $LogFile -Append
 	if ($status -ne 0) {
 		Write-Log "TEST_EXIT_FAILED=$testPath status=$status"

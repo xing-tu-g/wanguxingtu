@@ -33,9 +33,10 @@ func _init() -> void:
 func _check_setup_and_initial_draw(failures: Array[String]) -> void:
 	var battle_deck = BattleDeckScript.new()
 	battle_deck.setup(LEFT_DECK, RIGHT_DECK, 2)
-	_expect(battle_deck.hand_for_side(BoardModelScript.SIDE_LEFT) == ["guanyu", "zhouyu"], "left opening hand draws from left deck", failures)
-	_expect(battle_deck.deck_for_side(BoardModelScript.SIDE_LEFT) == ["zhangjiao", "zhaoyun"], "left deck keeps undrawn cards", failures)
-	_expect(battle_deck.hand_for_side(BoardModelScript.SIDE_RIGHT) == ["zhouyu", "guanyu"], "right opening hand draws from right deck", failures)
+	_expect(battle_deck.hand_for_side(BoardModelScript.SIDE_LEFT).size() == 2, "left opening hand draws two cards", failures)
+	_expect(battle_deck.deck_for_side(BoardModelScript.SIDE_LEFT).size() == 2, "left deck keeps two undrawn cards", failures)
+	_expect(_has_same_members(battle_deck.hand_for_side(BoardModelScript.SIDE_LEFT) + battle_deck.deck_for_side(BoardModelScript.SIDE_LEFT), LEFT_DECK), "left shuffled piles preserve all cards", failures)
+	_expect(battle_deck.hand_for_side(BoardModelScript.SIDE_RIGHT).size() == 2, "right opening hand draws two cards", failures)
 	_expect(battle_deck.discard_for_side(BoardModelScript.SIDE_RIGHT).is_empty(), "right discard starts empty", failures)
 	_expect(not battle_deck.has_no_deck_hand(BoardModelScript.SIDE_LEFT), "side with deck and hand is not exhausted", failures)
 
@@ -62,11 +63,12 @@ func _check_optional_discard_recycle(failures: Array[String]) -> void:
 func _check_consume_to_discard(failures: Array[String]) -> void:
 	var battle_deck = BattleDeckScript.new()
 	battle_deck.setup(LEFT_DECK, RIGHT_DECK, 2)
-	_expect(battle_deck.consume_from_hand(BoardModelScript.SIDE_LEFT, "zhouyu"), "consume returns true for hand card", failures)
-	_expect(not battle_deck.hand_for_side(BoardModelScript.SIDE_LEFT).has("zhouyu"), "consumed card leaves hand", failures)
-	_expect(battle_deck.discard_for_side(BoardModelScript.SIDE_LEFT) == ["zhouyu"], "consumed card enters discard", failures)
+	var hand_card := str(battle_deck.hand_for_side(BoardModelScript.SIDE_LEFT)[0])
+	_expect(battle_deck.consume_from_hand(BoardModelScript.SIDE_LEFT, hand_card), "consume returns true for hand card", failures)
+	_expect(not battle_deck.hand_for_side(BoardModelScript.SIDE_LEFT).has(hand_card), "consumed card leaves hand", failures)
+	_expect(battle_deck.discard_for_side(BoardModelScript.SIDE_LEFT) == [hand_card], "consumed card enters discard", failures)
 	_expect(not battle_deck.consume_from_hand(BoardModelScript.SIDE_LEFT, "sunshangxiang"), "consume returns false for missing card", failures)
-	_expect(battle_deck.discard_for_side(BoardModelScript.SIDE_LEFT) == ["zhouyu"], "missing consume does not mutate discard", failures)
+	_expect(battle_deck.discard_for_side(BoardModelScript.SIDE_LEFT) == [hand_card], "missing consume does not mutate discard", failures)
 
 
 func _check_reset_replaces_piles(failures: Array[String]) -> void:
@@ -99,3 +101,15 @@ func _check_runtime_and_probes_share_helper(failures: Array[String]) -> void:
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:
 	if not condition:
 		failures.append("FAIL: %s" % message)
+
+
+func _has_same_members(actual: Array, expected: Array) -> bool:
+	if actual.size() != expected.size():
+		return false
+	var remaining: Array = expected.duplicate()
+	for value in actual:
+		var index: int = remaining.find(value)
+		if index < 0:
+			return false
+		remaining.remove_at(index)
+	return remaining.is_empty()

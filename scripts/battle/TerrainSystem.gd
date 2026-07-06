@@ -37,7 +37,10 @@ func set_terrain(column: int, row: int, terrain_id: String) -> bool:
 func get_terrain(column: int, row: int) -> String:
 	if not is_in_bounds(column, row):
 		return TERRAIN_GRASS
-	return str(terrain_cells.get(_cell_key(column, row), TERRAIN_GRASS))
+	var terrain_value = terrain_cells.get(_cell_key(column, row), TERRAIN_GRASS)
+	if terrain_value == null:
+		return TERRAIN_GRASS
+	return str(terrain_value)
 
 
 func generate_deterministic(seed_value: int = 1) -> Dictionary:
@@ -74,7 +77,18 @@ func generate_deterministic(seed_value: int = 1) -> Dictionary:
 
 
 func get_zone_for_column(column: int, row: int = -1) -> String:
-	return BoardModelScript.get_zone_for_column(column, row)
+	var max_cols: int = BoardModelScript.get_cols_for_row(row) if row >= 1 and row <= ROWS else 10
+	var deploy_width: int = BoardModelScript.get_deployment_width_for_row(row) if row >= 1 and row <= ROWS else 3
+	var blue_end: int = deploy_width
+	var red_start: int = max_cols - deploy_width + 1
+
+	if column >= 1 and column <= blue_end:
+		return ZONE_LEFT_DEPLOYMENT
+	if column > blue_end and column < red_start:
+		return ZONE_PUBLIC
+	if column >= red_start and column <= max_cols:
+		return ZONE_RIGHT_DEPLOYMENT
+	return ""
 
 
 func get_movement_cost(unit: Dictionary, column: int, row: int) -> int:
@@ -112,7 +126,8 @@ func get_range_delta(unit: Dictionary) -> int:
 
 
 func is_in_bounds(column: int, row: int) -> bool:
-	return BoardModelScript.is_in_bounds(column, row)
+	var max_cols: int = BoardModelScript.get_cols_for_row(row)
+	return column >= 1 and column <= max_cols and row >= 1 and row <= ROWS
 
 
 func _pick_cell_in_columns(rng: RandomNumberGenerator, min_column: int, max_column: int) -> Vector2i:

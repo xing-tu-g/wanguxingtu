@@ -39,7 +39,7 @@ func _check_probe_uses_shared_card_flow(label: String, source: String, failures:
 
 func _check_battle_screen_uses_shared_card_flow(source: String, failures: Array[String]) -> void:
 	_expect(source.contains("BattleDeckScript"), "BattleScreen preloads shared battle deck helper", failures)
-	_expect(source.contains("var battle_deck = BattleDeckScript.new()"), "BattleScreen owns one battle deck helper instance", failures)
+	_expect(source.contains("battle_deck") and source.contains("BattleDeckScript.new()"), "BattleScreen owns one battle deck helper instance", failures)
 	_expect(source.contains("battle_deck.setup(_player_battle_hero_ids(), _enemy_battle_hero_ids(), STARTING_HAND_SIZE, RECYCLE_DISCARD_ON_EMPTY)"), "BattleScreen initializes runtime piles through helper", failures)
 	_expect(source.contains("func set_screen_data"), "BattleScreen can receive configured deck data", failures)
 	_expect(source.contains("battle_deck.draw(side, count)"), "BattleScreen draw wrapper delegates to helper", failures)

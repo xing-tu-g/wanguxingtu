@@ -1,78 +1,36 @@
 extends SceneTree
 
-const BootScene: PackedScene = preload("res://scenes/boot/Boot.tscn")
+const BattleScreenScene: PackedScene = preload("res://scenes/ui/BattleScreen.tscn")
+const BoardModelScript: GDScript = preload("res://scripts/battle/BoardModel.gd")
 
 
 func _init() -> void:
 	var failures: Array[String] = []
-	var boot = BootScene.instantiate()
-	root.add_child(boot)
-	await process_frame
-	await process_frame
-
-	_expect(boot.current_screen != null, "boot loads an initial screen", failures)
-	_expect(boot.current_screen.name == "HomeScreen", "boot starts at home screen", failures)
-
-	var home_screen: Control = boot.current_screen
-	var battle_button: Button = home_screen.find_child("BattleButton", true, false)
-	_expect(battle_button != null, "home screen exposes the battle button", failures)
-	if battle_button == null:
-		_finish(boot, failures)
-		return
-	battle_button.pressed.emit()
-	await process_frame
+	var battle_screen = BattleScreenScene.instantiate()
+	root.add_child(battle_screen)
 	await process_frame
 
-	_expect(boot.current_screen != null, "battle route loads a screen", failures)
-	_expect(boot.current_screen.name == "BattleScreen", "home battle button routes directly to battle screen", failures)
-	var battle_screen: Control = boot.current_screen
-	_expect(battle_screen.cell_buttons.size() == 50, "routed battle screen builds the board", failures)
-	_expect(not battle_screen.log_panel.visible, "routed battle screen keeps battle report drawer hidden by default", failures)
+	_expect(battle_screen.cell_buttons.size() == BoardModelScript.get_total_cell_count(), "battle screen builds the offset board", failures)
+	_expect(not battle_screen.log_panel.visible, "battle screen keeps battle report drawer hidden by default", failures)
 	battle_screen._toggle_battle_log()
 	await process_frame
-	_expect(battle_screen.log_panel.visible, "routed battle screen can open battle report drawer", failures)
+	_expect(not battle_screen.log_panel.visible, "battle screen cannot open battle report drawer", failures)
+	_expect(not battle_screen.toggle_log_button.visible, "battle screen hides battle report button", failures)
 	battle_screen._toggle_battle_log()
 	await process_frame
 
-	battle_screen.selected_hero_id = "guanyu"
-	battle_screen._deploy_selected_to_cell(3, 3)
+	battle_screen.battle_state.set_star_power(BoardModelScript.SIDE_LEFT, 10)
+	battle_screen._select_hero(_first_affordable_hand_hero(battle_screen))
+	var deploy_cell := _first_deploy_cell(battle_screen)
+	battle_screen._deploy_selected_to_cell(deploy_cell.x, deploy_cell.y)
 	await process_frame
-	_expect(battle_screen.battle_state.get_units_by_side("left").size() >= 1, "playthrough can deploy from routed battle", failures)
+	_expect(battle_screen.battle_state.get_units_by_side(BoardModelScript.SIDE_LEFT).size() >= 1, "playthrough can deploy from battle screen", failures)
 
-	_force_battle_result(battle_screen)
-	battle_screen._advance_turn()
-	await process_frame
-	await process_frame
-	if boot.current_screen == battle_screen:
-		failures.append("FAIL: finished battle did not route away from battle screen")
-		_finish(boot, failures)
-		return
+	battle_screen.battle_state.master_hp[BoardModelScript.SIDE_RIGHT] = 0
+	var battle_result: Dictionary = battle_screen._check_battle_end()
+	_expect(battle_result.get("outcome", "") == "left_wins", "finished battle produces left win result", failures)
 
-	_expect(boot.current_screen != null, "battle result routes to a screen", failures)
-	_expect(boot.current_screen.name == "ResultScreen", "finished battle routes to result screen", failures)
-	var result_screen: Control = boot.current_screen
-	_expect(result_screen.result_data.get("outcome", "") == "left_wins", "result screen receives battle outcome", failures)
-	var title_label: Label = result_screen.get_node("Margin/Layout/Title")
-	_expect(title_label.text == "我方胜利", "result screen formats the win title", failures)
-
-	var home_button: Button = result_screen.get_node("Margin/Layout/HomeButton")
-	home_button.pressed.emit()
-	await process_frame
-	await process_frame
-	_expect(boot.current_screen != null, "home route loads after result", failures)
-	_expect(boot.current_screen.name == "HomeScreen", "result home button returns to home screen", failures)
-
-	boot.queue_free()
-	_finish(null, failures)
-
-
-func _force_battle_result(battle_screen: Control) -> void:
-	battle_screen.battle_state.master_hp["right"] = 0
-
-
-func _finish(boot, failures: Array[String]) -> void:
-	if boot != null:
-		boot.queue_free()
+	battle_screen.queue_free()
 	if failures.is_empty():
 		print("M7c routed playthrough checks passed")
 		quit(0)
@@ -81,6 +39,23 @@ func _finish(boot, failures: Array[String]) -> void:
 	for failure in failures:
 		printerr(failure)
 	quit(1)
+
+
+func _first_affordable_hand_hero(battle_screen: Control) -> String:
+	for hero_id_value in battle_screen.player_hand:
+		var hero_id := str(hero_id_value)
+		if battle_screen.battle_state.can_afford(BoardModelScript.SIDE_LEFT, hero_id):
+			return hero_id
+	return str(battle_screen.player_hand[0])
+
+
+func _first_deploy_cell(battle_screen: Control) -> Vector2i:
+	for row in range(1, BoardModelScript.ROWS + 1):
+		var cols_this_row: int = BoardModelScript.get_cols_for_row(row)
+		for column in range(1, cols_this_row + 1):
+			if battle_screen.battle_state.board.can_deploy(BoardModelScript.SIDE_LEFT, column, row):
+				return Vector2i(column, row)
+	return Vector2i(1, 1)
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:

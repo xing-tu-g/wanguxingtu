@@ -6,13 +6,20 @@ const BoardModelScript: GDScript = preload("res://scripts/battle/BoardModel.gd")
 
 func _init() -> void:
 	var failures: Array[String] = []
-	await _check_runtime_deck_recycles_discard_on_draw(failures)
-	await _check_card_zone_shows_pending_recycle(failures)
-	await _check_discard_prevents_three_empty_defeat(failures)
+	var screen: Control = BattleScreenScene.instantiate()
+	root.add_child(screen)
+	await process_frame
+
+	_check_empty_deck_does_not_recycle_discard(screen, failures)
+	_check_card_zone_keeps_discard_as_used_record(screen, failures)
+	_check_empty_slot_hint_after_deploying_last_reserve(screen, failures)
+	await process_frame
+
+	screen.queue_free()
 	await process_frame
 
 	if failures.is_empty():
-		print("M34 discard recycle checks passed")
+		print("M34 discard no-recycle checks passed")
 		quit(0)
 		return
 
@@ -21,65 +28,39 @@ func _init() -> void:
 	quit(1)
 
 
-func _check_runtime_deck_recycles_discard_on_draw(failures: Array[String]) -> void:
-	var screen = await _make_screen()
+func _check_empty_deck_does_not_recycle_discard(screen: Control, failures: Array[String]) -> void:
 	screen.player_deck.clear()
 	screen.player_hand.clear()
 	screen.player_discard.clear()
 	screen.player_discard.append("guanyu")
 	var drawn_cards: Array = screen._draw_cards(BoardModelScript.SIDE_LEFT, 1)
-	screen._log_drawn_cards(BoardModelScript.SIDE_LEFT, drawn_cards)
-	screen._update_status("回收测试。")
-	await process_frame
-	_expect(drawn_cards == ["guanyu"], "runtime draw recycles player discard", failures)
-	_expect(screen.player_discard.is_empty(), "runtime recycle clears player discard", failures)
-	_expect(screen.player_hand == ["guanyu"], "runtime recycle puts card into player hand", failures)
-	_expect(_log_contains(screen, "我方 - 洗牌 - 弃牌回收到牌库后抽牌"), "runtime logs discard recycle", failures)
-	_expect(_log_contains(screen, "我方 - 抽牌 - 抽到 关羽"), "runtime logs recycled draw", failures)
-	screen.queue_free()
+	_expect(drawn_cards.is_empty(), "empty deck does not recycle discard into draw", failures)
+	_expect(screen.player_discard == ["guanyu"], "discard stays as used-card record", failures)
+	_expect(screen.player_hand.is_empty(), "empty deck leaves hand slot empty", failures)
 
 
-func _check_card_zone_shows_pending_recycle(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	screen.player_deck.clear()
-	screen.player_discard.append("zhouyu")
-	screen._update_status("待洗回提示测试。")
-	screen._toggle_card_zone()
-	await process_frame
-	_expect(screen.card_zone_summary_label.text.find("我方 牌库：0（待洗回 1）") >= 0, "summary shows pending recycle count", failures)
-	_expect(screen.card_zone_detail_label.text.find("[b]我方[/b]：牌库 0（待洗回 1）｜手牌 3｜弃牌 1") >= 0, "detail shows pending recycle count", failures)
-	_expect(screen.card_zone_detail_label.text.find("详细牌序属于后台数据") >= 0, "detail keeps backend data explanation", failures)
-	screen.queue_free()
+func _check_card_zone_keeps_discard_as_used_record(screen: Control, failures: Array[String]) -> void:
+	screen.card_zone_view.refresh()
+	screen._update_card_zone_summary()
+	_expect(screen.card_zone_summary_label.text.contains("牌库剩余 0"), "summary shows empty reserve deck", failures)
+	_expect(screen.card_zone_detail_label.text.contains("弃牌 1"), "detail shows discard count", failures)
+	_expect(not screen.card_zone_detail_label.text.contains("待洗回"), "detail does not promise discard recycle", failures)
 
 
-func _check_discard_prevents_three_empty_defeat(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	screen.player_deck.clear()
+func _check_empty_slot_hint_after_deploying_last_reserve(screen: Control, failures: Array[String]) -> void:
 	screen.player_hand.clear()
+	screen.player_deck.clear()
 	screen.player_discard.clear()
-	screen.player_discard.append("zhangjiao")
-	for unit_data: Dictionary in screen.battle_state.get_units_by_side(BoardModelScript.SIDE_LEFT):
-		screen.battle_state.board.remove_unit(str(unit_data.get("instance_id", "")))
-	var result: Dictionary = screen._check_battle_end()
-	_expect(result.is_empty(), "discard pile prevents all-empty defeat", failures)
-	screen.player_discard.clear()
-	result = screen._check_battle_end()
-	_expect(not result.is_empty(), "all-empty still triggers defeat after discard clears", failures)
-	screen.queue_free()
-
-
-func _make_screen():
-	var screen = BattleScreenScene.instantiate()
-	root.add_child(screen)
-	await process_frame
-	return screen
-
-
-func _log_contains(screen, text: String) -> bool:
-	for entry in screen.battle_log_entries:
-		if str(entry).find(text) >= 0:
-			return true
-	return false
+	screen.player_hand.append("guanyu")
+	screen._sync_card_pile_references()
+	screen._consume_hero_from_hand(BoardModelScript.SIDE_LEFT, "guanyu")
+	screen._update_hero_buttons()
+	await screen.get_tree().process_frame
+	var next_slot: PanelContainer = screen.get_node("BottomHand/Controls/HeroScroll/HeroButtons/NextDrawSlot")
+	var next_label: Label = next_slot.get_node("NextDrawLabel")
+	_expect(screen.player_hand.is_empty(), "used final hand card is not replaced when deck is empty", failures)
+	_expect(next_slot.visible, "empty hand slot is visible when deck is empty", failures)
+	_expect(next_label.text.contains("牌库已空"), "empty hand slot states deck is empty", failures)
 
 
 func _expect(condition: bool, message: String, failures: Array[String]) -> void:

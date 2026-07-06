@@ -3,6 +3,8 @@ class_name MovementSystem
 
 const BoardModelScript: GDScript = preload("res://scripts/battle/BoardModel.gd")
 const TargetingSystemScript: GDScript = preload("res://scripts/battle/TargetingSystem.gd")
+const BattleAIScript: GDScript = preload("res://scripts/battle/BattleAI.gd")
+const AttackShapeSystemScript: GDScript = preload("res://scripts/battle/AttackShapeSystem.gd")
 
 const SIDE_LEFT := "left"
 const SIDE_RIGHT := "right"
@@ -24,12 +26,16 @@ static func act_side(state, side: String) -> Array:
 	return results
 
 static func act_unit(state, unit: Dictionary) -> Dictionary:
+	if _is_stunned(unit):
+		return {"action": "stunned", "move": _stationary_result(unit), "reason": "stunned"}
+
 	var enemy_units: Array = state.get_enemy_units(str(unit.get("side", "")))
 	var target: Dictionary = TargetingSystemScript.select_target(unit, enemy_units, state.terrain_system)
 	if not target.is_empty():
 		return _attack_unit(state, unit, target)
 
-	var move_result: Dictionary = move_unit_forward(state, unit)
+	var move_result: Dictionary = {}
+	move_result = move_unit_forward(state, unit)
 	enemy_units = state.get_enemy_units(str(unit.get("side", "")))
 	target = TargetingSystemScript.select_target(unit, enemy_units, state.terrain_system)
 	if not target.is_empty():
@@ -50,7 +56,7 @@ static func act_unit(state, unit: Dictionary) -> Dictionary:
 	return {"action": "move", "move": move_result}
 
 static func move_unit_forward(state, unit: Dictionary) -> Dictionary:
-	var move_value: int = state.get_unit_move(unit)
+	var move_value: int = mini(1, state.get_unit_move(unit))
 	if move_value <= 0:
 		return {"ok": true, "from": _unit_position(unit), "to": _unit_position(unit), "steps": 0}
 
@@ -58,7 +64,6 @@ static func move_unit_forward(state, unit: Dictionary) -> Dictionary:
 	var origin_column := int(unit.get("column", 0))
 	var origin_row := int(unit.get("row", 0))
 	var final_column := origin_column
-	var can_pass := _can_pass_blockers(unit)
 
 	var movement_spent := 0
 	for step in range(1, move_value + 1):
@@ -67,8 +72,6 @@ static func move_unit_forward(state, unit: Dictionary) -> Dictionary:
 			break
 
 		if state.board.is_occupied(next_column, origin_row):
-			if can_pass:
-				continue
 			break
 
 		var movement_cost: int = state.get_movement_cost(unit, next_column, origin_row)
@@ -91,7 +94,9 @@ static func move_unit_forward(state, unit: Dictionary) -> Dictionary:
 	return result
 
 static func _attack_unit(state, attacker: Dictionary, target: Dictionary) -> Dictionary:
-	var damage: int = state.apply_damage_to_unit(target, state.get_unit_attack(attacker), str(attacker.get("damage_type", "physical")), attacker)
+	var target_snapshot := target.duplicate(true)
+	var backstab_bonus := AttackShapeSystemScript.ASSASSIN_BACKSTAB_BONUS_DAMAGE if AttackShapeSystemScript.is_backstab_target(attacker, target) else 0
+	var damage: int = state.apply_damage_to_unit(target, state.get_unit_attack(attacker) + backstab_bonus, str(attacker.get("damage_type", "physical")), attacker)
 	var skill_results: Array = state.trigger_skill_event("attack_hit", {
 		"source_unit": attacker,
 		"target_unit": target,
@@ -101,7 +106,9 @@ static func _attack_unit(state, attacker: Dictionary, target: Dictionary) -> Dic
 		"action": "attack",
 		"target_type": DAMAGE_TARGET_UNIT,
 		"target_id": str(target.get("instance_id", "")),
+		"target_snapshot": target_snapshot,
 		"damage": damage,
+		"backstab_bonus_damage": backstab_bonus,
 		"skill_results": skill_results,
 	}
 
@@ -125,8 +132,15 @@ static func _forward_direction(side: String) -> int:
 		return -1
 	return 1
 
-static func _can_pass_blockers(unit: Dictionary) -> bool:
-	return bool(unit.get("can_pass_blockers", false)) or str(unit.get("class", "")) == "assassin"
-
 static func _unit_position(unit: Dictionary) -> Vector2i:
 	return Vector2i(int(unit.get("column", 0)), int(unit.get("row", 0)))
+
+
+static func _stationary_result(unit: Dictionary) -> Dictionary:
+	var position := _unit_position(unit)
+	return {"ok": true, "from": position, "to": position, "steps": 0}
+
+
+static func _is_stunned(unit: Dictionary) -> bool:
+	var statuses = unit.get("statuses", {})
+	return statuses is Dictionary and statuses.has("stun")

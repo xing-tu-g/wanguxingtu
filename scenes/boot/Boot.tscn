@@ -10,4 +10,4 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_router")
-initial_screen = "res://scenes/ui/HomeScreen.tscn"
+initial_screen = "res://scenes/ui/MainMenuScene.tscn"

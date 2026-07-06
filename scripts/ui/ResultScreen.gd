@@ -4,14 +4,22 @@ extends Control
 ## Displays battle results, rewards, and unit stats after a match ends.
 ## Navigates back to home via EventBus — no parent dependency.
 
-const HOME_SCREEN := "res://scenes/ui/HomeScreen.tscn"
+const HOME_SCREEN := "res://scenes/ui/MainMenuScene.tscn"
+const DECK_SCREEN := "res://scenes/ui/DeckBuilderScene.tscn"
 const FontScaleScript: GDScript = preload("res://scripts/ui/theme/FontScale.gd")
 
 # ── Cached child nodes ────────────────────────────────────────────────
 
-@onready var _home_button: Button = $Margin/Layout/HomeButton
+@onready var _home_button: Button = $Margin/Layout/ButtonRow/HomeButton
+@onready var _retry_button: Button = $Margin/Layout/ButtonRow/RetryButton
 @onready var _title_label: Label = $Margin/Layout/Title
+@onready var _subtitle_label: Label = $Margin/Layout/Subtitle
 @onready var _body_label: Label = $Margin/Layout/Body
+@onready var _round_value: Label = $Margin/Layout/ResultPanel/ResultGrid/RoundValue
+@onready var _kill_value: Label = $Margin/Layout/ResultPanel/ResultGrid/KillValue
+@onready var _damage_value: Label = $Margin/Layout/ResultPanel/ResultGrid/DamageValue
+@onready var _mvp_value: Label = $Margin/Layout/ResultPanel/ResultGrid/MvpValue
+@onready var _reward_value: Label = $Margin/Layout/ResultPanel/ResultGrid/RewardValue
 @onready var _app_state: Node = get_node("/root/AppState")
 
 # ── State ─────────────────────────────────────────────────────────────
@@ -20,19 +28,29 @@ var result_data: Dictionary = {}
 
 ## Cached outcome string — computed once in set_result().
 var _outcome: String = "unknown"
+var _ready_complete: bool = false
+var _rewards_applied: bool = false
 
 
 func _ready() -> void:
+	_ready_complete = true
 	if not _home_button.pressed.is_connected(_return_home):
 		_home_button.pressed.connect(_return_home)
-	_apply_font_scale()
-	_refresh()
+	if not _retry_button.pressed.is_connected(_retry_battle):
+		_retry_button.pressed.connect(_retry_battle)
+	_apply_result_if_ready()
 
 
 ## Called by ScreenRouter when this screen is shown with battle result data.
 func set_result(new_result_data: Dictionary) -> void:
 	result_data = new_result_data.duplicate(true)
 	_outcome = str(result_data.get("outcome", "unknown"))
+	_apply_result_if_ready()
+
+
+func _apply_result_if_ready() -> void:
+	if not _ready_complete:
+		return
 	_apply_battle_rewards()
 	_apply_font_scale()
 	_refresh()
@@ -43,12 +61,18 @@ func set_result(new_result_data: Dictionary) -> void:
 func _apply_font_scale() -> void:
 	var vw := get_viewport_rect().size.x
 	_title_label.add_theme_font_size_override(&"font_size", FontScaleScript.title_size(vw) - 4)
+	_subtitle_label.add_theme_font_size_override(&"font_size", FontScaleScript.body_size(vw))
 	_body_label.add_theme_font_size_override(&"font_size", FontScaleScript.body_size(vw))
 
 
 # ── Rewards ───────────────────────────────────────────────────────────
 
 func _apply_battle_rewards() -> void:
+	if _rewards_applied:
+		return
+	_rewards_applied = true
+	if _app_state == null:
+		return
 	_app_state.record_battle()
 	match _outcome:
 		"left_wins":
@@ -76,6 +100,21 @@ func _refresh() -> void:
 	var stats: Dictionary = result_data.get("stats", {})
 
 	_title_label.text = _format_outcome()
+	_subtitle_label.text = "第 %d 回合结束" % int(result_data.get("round_number", 0))
+	_round_value.text = "第 %d 回合" % int(result_data.get("round_number", 0))
+	_kill_value.text = "我方 %d  /  敌方 %d" % [
+		_stat_value(stats, "units_defeated", "left"),
+		_stat_value(stats, "units_defeated", "right"),
+	]
+	_damage_value.text = "我方 %d  /  敌方 %d" % [
+		_stat_value(stats, "unit_damage_dealt", "left") + _stat_value(stats, "master_damage_dealt", "left"),
+		_stat_value(stats, "unit_damage_dealt", "right") + _stat_value(stats, "master_damage_dealt", "right"),
+	]
+	_mvp_value.text = "MVP 暂不评选"
+	_reward_value.text = "金币 +%d  星石 +%d" % [
+		_gold_reward(_outcome == "left_wins"),
+		_star_stone_reward(),
+	]
 
 	var lines: Array[String] = [
 		"战斗结果：%s" % _format_outcome(),
@@ -93,7 +132,7 @@ func _refresh() -> void:
 		"敌方单位/奕星师伤害：%d / %d" % [_stat_value(stats, "unit_damage_dealt", "right"),
 			_stat_value(stats, "master_damage_dealt", "right")],
 		"",
-		"[b]战利品[/b]：金币 +%d  星石 +%d  总战斗 %d" % [
+		"战利品：金币 +%d  星石 +%d  总战斗 %d" % [
 			_gold_reward(_outcome == "left_wins"),
 			_star_stone_reward(),
 			_app_state.battles_fought,
@@ -131,6 +170,12 @@ func _return_home() -> void:
 	var bus := _get_event_bus()
 	if bus != null:
 		bus.screen_changed.emit(HOME_SCREEN)
+
+
+func _retry_battle() -> void:
+	var bus := _get_event_bus()
+	if bus != null:
+		bus.screen_changed.emit(DECK_SCREEN, {})
 
 
 func _get_event_bus() -> Node:

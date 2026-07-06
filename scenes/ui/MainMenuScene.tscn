@@ -1,0 +1,1230 @@
+[gd_scene load_steps=5 format=3 uid="uid://main_menu_scene"]
+
+[ext_resource type="Script" path="res://scripts/ui/HomeScreen.gd" id="1_main_menu"]
+[ext_resource type="Texture2D" path="res://assets/art/backgrounds/B02_home_background.png" id="2_home_background"]
+[ext_resource type="Theme" path="res://assets/theme/default_theme.tres" id="3_theme"]
+[ext_resource type="Script" path="res://scripts/ui/StarChartWorldLayer.gd" id="4_world_layer"]
+
+[node name="MainMenuScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_theme")
+script = ExtResource("1_main_menu")
+
+[node name="BackgroundLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="BackgroundColor" type="ColorRect" parent="BackgroundLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.012, 0.02, 0.055, 1)
+
+[node name="Background" type="TextureRect" parent="BackgroundLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_home_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BackgroundWash" type="ColorRect" parent="BackgroundLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.005, 0.012, 0.045, 0.38)
+
+[node name="Background" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="HomeBackgroundImage" type="TextureRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_home_background")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="HomeReadabilityWash" type="ColorRect" parent="Background"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.005, 0.012, 0.045, 0.48)
+
+[node name="TopBarBg" type="TextureRect" parent="."]
+modulate = Color(1, 1, 1, 0.72)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -314.0
+offset_top = 8.0
+offset_right = 314.0
+offset_bottom = 62.0
+grow_horizontal = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TopBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -274.0
+offset_top = 15.0
+offset_right = 274.0
+offset_bottom = 55.0
+grow_horizontal = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="CoinIcon" type="TextureRect" parent="TopBar"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoinLabel" type="Label" parent="TopBar"]
+custom_minimum_size = Vector2(82, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "铜币 0"
+vertical_alignment = 1
+
+[node name="StarCoinIcon" type="TextureRect" parent="TopBar"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StarCoinLabel" type="Label" parent="TopBar"]
+custom_minimum_size = Vector2(82, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "星币 0"
+vertical_alignment = 1
+
+[node name="StarTrackIcon" type="TextureRect" parent="TopBar"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StarTrackLabel" type="Label" parent="TopBar"]
+custom_minimum_size = Vector2(176, 34)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "星轨 0 · 初星"
+vertical_alignment = 1
+
+[node name="UtilityButtons" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FriendsButton" type="TextureButton" parent="TopBar/UtilityButtons"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="TopBar/UtilityButtons/FriendsButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MailButton" type="TextureButton" parent="TopBar/UtilityButtons"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="TopBar/UtilityButtons/MailButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="SettingsButton" type="TextureButton" parent="TopBar/UtilityButtons"]
+custom_minimum_size = Vector2(44, 44)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="TopBar/UtilityButtons/SettingsButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -10.0
+offset_right = 10.0
+offset_bottom = 10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LeftPanel" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 276.0
+offset_bottom = 108.0
+
+[node name="PlayerProfilePanel" type="Panel" parent="LeftPanel"]
+modulate = Color(1, 1, 1, 0.74)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PlayerPanelBg" type="TextureRect" parent="LeftPanel/PlayerProfilePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AvatarFrame" type="PanelContainer" parent="LeftPanel/PlayerProfilePanel"]
+custom_minimum_size = Vector2(66, 66)
+layout_mode = 1
+offset_left = 8.0
+offset_top = 10.0
+offset_right = 74.0
+offset_bottom = 76.0
+
+[node name="Avatar" type="TextureRect" parent="LeftPanel/PlayerProfilePanel/AvatarFrame"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AvatarFrameArt" type="TextureRect" parent="LeftPanel/PlayerProfilePanel"]
+layout_mode = 1
+offset_left = 2.0
+offset_top = 4.0
+offset_right = 82.0
+offset_bottom = 84.0
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PlayerNameLabel" type="Label" parent="LeftPanel/PlayerProfilePanel"]
+layout_mode = 1
+offset_left = 90.0
+offset_top = 12.0
+offset_right = 230.0
+offset_bottom = 36.0
+theme_override_font_sizes/font_size = 18
+text = "玩家"
+
+[node name="LevelLabel" type="Label" parent="LeftPanel/PlayerProfilePanel"]
+layout_mode = 1
+offset_left = 90.0
+offset_top = 38.0
+offset_right = 230.0
+offset_bottom = 58.0
+theme_override_font_sizes/font_size = 15
+text = "Lv.1"
+
+[node name="ExpBar" type="ProgressBar" parent="LeftPanel/PlayerProfilePanel"]
+layout_mode = 1
+offset_left = 90.0
+offset_top = 63.0
+offset_right = 230.0
+offset_bottom = 76.0
+show_percentage = false
+
+[node name="ProfileMargin" type="MarginContainer" parent="LeftPanel/PlayerProfilePanel"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 7
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 7
+
+[node name="ProfileLayout" type="HBoxContainer" parent="LeftPanel/PlayerProfilePanel/ProfileMargin"]
+layout_mode = 2
+theme_override_constants/separation = 9
+
+[node name="AvatarFrame" type="PanelContainer" parent="LeftPanel/PlayerProfilePanel/ProfileMargin/ProfileLayout"]
+custom_minimum_size = Vector2(52, 52)
+layout_mode = 2
+
+[node name="Avatar" type="TextureRect" parent="LeftPanel/PlayerProfilePanel/ProfileMargin/ProfileLayout/AvatarFrame"]
+layout_mode = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ProfileText" type="VBoxContainer" parent="LeftPanel/PlayerProfilePanel/ProfileMargin/ProfileLayout"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="PlayerNameLabel" type="Label" parent="LeftPanel/PlayerProfilePanel/ProfileMargin/ProfileLayout/ProfileText"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "玩家"
+
+[node name="LevelLabel" type="Label" parent="LeftPanel/PlayerProfilePanel/ProfileMargin/ProfileLayout/ProfileText"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "Lv.1"
+
+[node name="ExpBar" type="ProgressBar" parent="LeftPanel/PlayerProfilePanel/ProfileMargin/ProfileLayout/ProfileText"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+show_percentage = false
+
+[node name="CenterWorld" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="OuterStarFieldLayer" type="Control" parent="CenterWorld"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -440.0
+offset_top = -420.0
+offset_right = 440.0
+offset_bottom = 460.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_world_layer")
+layer_kind = "outer"
+animation_speed = 0.72
+intensity = 1.0
+
+[node name="OrbitStarSystemLayer" type="Control" parent="CenterWorld"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -330.0
+offset_top = -315.0
+offset_right = 330.0
+offset_bottom = 345.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_world_layer")
+layer_kind = "orbit"
+animation_speed = 1.0
+intensity = 1.0
+
+[node name="OrbitLayerArt" type="TextureRect" parent="CenterWorld/OrbitStarSystemLayer"]
+modulate = Color(1, 1, 1, 0.56)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="EnergyFlowLines" type="Control" parent="CenterWorld/OrbitStarSystemLayer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_world_layer")
+layer_kind = "orbit"
+animation_speed = 1.55
+intensity = 0.42
+
+[node name="CoreStarNode" type="Control" parent="CenterWorld"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -204.0
+offset_top = -188.0
+offset_right = 204.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(204, 204)
+
+[node name="CoreGlowArt" type="TextureRect" parent="CenterWorld/CoreStarNode"]
+modulate = Color(1, 1, 1, 0.45)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CoreNodeArt" type="TextureRect" parent="CenterWorld/CoreStarNode"]
+modulate = Color(1, 1, 1, 0.86)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -145.0
+offset_top = -145.0
+offset_right = 145.0
+offset_bottom = 145.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PulsingEnergyCore" type="Control" parent="CenterWorld/CoreStarNode"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_world_layer")
+layer_kind = "core"
+animation_speed = 1.15
+intensity = 1.0
+
+[node name="MatchCoreButton" type="TextureButton" parent="CenterWorld/CoreStarNode"]
+custom_minimum_size = Vector2(222, 222)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -111.0
+offset_top = -111.0
+offset_right = 111.0
+offset_bottom = 111.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(111, 111)
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="MatchTextLabel" type="Label" parent="CenterWorld/CoreStarNode/MatchCoreButton"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_colors/font_shadow_color = Color(0.005, 0.012, 0.04, 0.95)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 38
+text = "开始\n匹配"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IconTexture" type="TextureRect" parent="CenterWorld/CoreStarNode/MatchCoreButton"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -30.0
+offset_top = -70.0
+offset_right = 30.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="WarpOverlay" type="ColorRect" parent="CenterWorld"]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.66, 0.90, 1, 1)
+
+[node name="StarMapHintLabel" type="Label" parent="CenterWorld"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -330.0
+offset_top = -118.0
+offset_right = 330.0
+offset_bottom = -84.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "当前初星 · 星轨值 0 · 距离下一段 500"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="CenterFocusLayer" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StarMapCore" type="Control" parent="CenterFocusLayer"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -285.0
+offset_right = 300.0
+offset_bottom = 315.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(300, 300)
+
+[node name="StarGlowEffect" type="Panel" parent="CenterFocusLayer/StarMapCore"]
+modulate = Color(0.42, 0.74, 1, 0.42)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -272.0
+offset_top = -272.0
+offset_right = 272.0
+offset_bottom = 272.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StarRingDisplay" type="Panel" parent="CenterFocusLayer/StarMapCore"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -236.0
+offset_top = -236.0
+offset_right = 236.0
+offset_bottom = 236.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="OuterOrbit" type="Panel" parent="CenterFocusLayer/StarMapCore/StarRingDisplay"]
+modulate = Color(1, 0.82, 0.38, 0.7)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -205.0
+offset_top = -205.0
+offset_right = 205.0
+offset_bottom = 205.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="InnerOrbit" type="Panel" parent="CenterFocusLayer/StarMapCore/StarRingDisplay"]
+modulate = Color(0.45, 0.86, 1, 0.72)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -145.0
+offset_top = -145.0
+offset_right = 145.0
+offset_bottom = 145.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CorePulse" type="Panel" parent="CenterFocusLayer/StarMapCore/StarRingDisplay"]
+modulate = Color(0.10, 0.46, 0.72, 0.95)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -104.0
+offset_top = -104.0
+offset_right = 104.0
+offset_bottom = 104.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Btn_MatchStart" type="Button" parent="CenterFocusLayer/StarMapCore"]
+custom_minimum_size = Vector2(196, 196)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -98.0
+offset_top = -98.0
+offset_right = 98.0
+offset_bottom = 98.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(98, 98)
+theme_override_font_sizes/font_size = 28
+text = "开始\n匹配"
+
+[node name="IconTexture" type="TextureRect" parent="CenterFocusLayer/StarMapCore/Btn_MatchStart"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -34.0
+offset_top = -76.0
+offset_right = 34.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="StarMapHintLabel" type="Label" parent="CenterFocusLayer"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -330.0
+offset_top = -118.0
+offset_right = 330.0
+offset_bottom = -84.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 18
+text = "当前初星，星轨值 0，距离下一段 500"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightPanel" type="VBoxContainer" parent="."]
+modulate = Color(1, 1, 1, 0.68)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -170.0
+offset_top = -262.0
+offset_right = -52.0
+offset_bottom = 262.0
+grow_horizontal = 0
+grow_vertical = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Btn_Quest" type="TextureButton" parent="RightPanel"]
+custom_minimum_size = Vector2(104, 78)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="RightPanel/Btn_Quest"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -10.0
+offset_right = 28.0
+offset_bottom = 10.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LabelBg" type="ColorRect" parent="RightPanel/Btn_Quest"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -24.0
+offset_right = -12.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.01, 0.025, 0.075, 0.68)
+
+[node name="EntryLabel" type="Label" parent="RightPanel/Btn_Quest"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -25.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.88, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 15
+text = "武将"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Btn_Activity" type="TextureButton" parent="RightPanel"]
+custom_minimum_size = Vector2(104, 78)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="RightPanel/Btn_Activity"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -10.0
+offset_right = 28.0
+offset_bottom = 10.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LabelBg" type="ColorRect" parent="RightPanel/Btn_Activity"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -24.0
+offset_right = -12.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.01, 0.025, 0.075, 0.68)
+
+[node name="EntryLabel" type="Label" parent="RightPanel/Btn_Activity"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -25.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.88, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 15
+text = "阵容"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Btn_Deck" type="TextureButton" parent="RightPanel"]
+custom_minimum_size = Vector2(104, 78)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="RightPanel/Btn_Deck"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -10.0
+offset_right = 28.0
+offset_bottom = 10.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LabelBg" type="ColorRect" parent="RightPanel/Btn_Deck"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -24.0
+offset_right = -12.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.01, 0.025, 0.075, 0.68)
+
+[node name="EntryLabel" type="Label" parent="RightPanel/Btn_Deck"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -25.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.88, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 15
+text = "任务"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Btn_Codex" type="TextureButton" parent="RightPanel"]
+custom_minimum_size = Vector2(104, 78)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="RightPanel/Btn_Codex"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -10.0
+offset_right = 28.0
+offset_bottom = 10.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LabelBg" type="ColorRect" parent="RightPanel/Btn_Codex"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -24.0
+offset_right = -12.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.01, 0.025, 0.075, 0.68)
+
+[node name="EntryLabel" type="Label" parent="RightPanel/Btn_Codex"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -25.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.88, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 15
+text = "活动"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Btn_Summon" type="TextureButton" parent="RightPanel"]
+custom_minimum_size = Vector2(104, 78)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="RightPanel/Btn_Summon"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -10.0
+offset_right = 28.0
+offset_bottom = 10.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LabelBg" type="ColorRect" parent="RightPanel/Btn_Summon"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -24.0
+offset_right = -12.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.01, 0.025, 0.075, 0.68)
+
+[node name="EntryLabel" type="Label" parent="RightPanel/Btn_Summon"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -25.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.88, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 15
+text = "图鉴"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Btn_Report" type="TextureButton" parent="RightPanel"]
+custom_minimum_size = Vector2(104, 78)
+layout_mode = 2
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="IconTexture" type="TextureRect" parent="RightPanel/Btn_Report"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 8.0
+offset_top = -10.0
+offset_right = 28.0
+offset_bottom = 10.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="LabelBg" type="ColorRect" parent="RightPanel/Btn_Report"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -24.0
+offset_right = -12.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+color = Color(0.01, 0.025, 0.075, 0.68)
+
+[node name="EntryLabel" type="Label" parent="RightPanel/Btn_Report"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -25.0
+offset_bottom = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.98, 0.88, 0.62, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.85)
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 15
+text = "设置"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomLayer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+
+[node name="StarMapPopup" type="PopupPanel" parent="."]
+size = Vector2i(520, 300)
+
+[node name="PopupMargin" type="MarginContainer" parent="StarMapPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="PopupLayout" type="VBoxContainer" parent="StarMapPopup/PopupMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PopupTitle" type="Label" parent="StarMapPopup/PopupMargin/PopupLayout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "星图"
+horizontal_alignment = 1
+
+[node name="PopupBody" type="Label" parent="StarMapPopup/PopupMargin/PopupLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 17
+text = "星图详情占位：后续接入赛季、段位奖励与匹配区间。"
+autowrap_mode = 3
+
+[node name="PopupCloseButton" type="Button" parent="StarMapPopup/PopupMargin/PopupLayout"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "关闭"
+
+[node name="PlaceholderPopup" type="PopupPanel" parent="."]
+size = Vector2i(420, 220)
+
+[node name="PopupMargin" type="MarginContainer" parent="PlaceholderPopup"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 22
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 22
+theme_override_constants/margin_bottom = 18
+
+[node name="PopupLayout" type="VBoxContainer" parent="PlaceholderPopup/PopupMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PopupTitle" type="Label" parent="PlaceholderPopup/PopupMargin/PopupLayout"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "功能入口"
+horizontal_alignment = 1
+
+[node name="PopupBody" type="Label" parent="PlaceholderPopup/PopupMargin/PopupLayout"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 17
+text = "占位功能，后续接入正式模块。"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="PopupCloseButton" type="Button" parent="PlaceholderPopup/PopupMargin/PopupLayout"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "关闭"
+
+[node name="StarTrackPanel" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+offset_left = 22.0
+offset_top = 18.0
+offset_right = 382.0
+offset_bottom = 94.0
+
+[node name="StarTrackMargin" type="MarginContainer" parent="StarTrackPanel"]
+layout_mode = 2
+
+[node name="StarTrackLayout" type="VBoxContainer" parent="StarTrackPanel/StarTrackMargin"]
+layout_mode = 2
+
+[node name="StarTrackHeader" type="HBoxContainer" parent="StarTrackPanel/StarTrackMargin/StarTrackLayout"]
+layout_mode = 2
+
+[node name="StarTrackLevel" type="Label" parent="StarTrackPanel/StarTrackMargin/StarTrackLayout/StarTrackHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "星轨 0"
+
+[node name="StarTrackToNext" type="Label" parent="StarTrackPanel/StarTrackMargin/StarTrackLayout/StarTrackHeader"]
+layout_mode = 2
+text = "距下段 0"
+
+[node name="StarTrackProgress" type="ProgressBar" parent="StarTrackPanel/StarTrackMargin/StarTrackLayout"]
+layout_mode = 2
+show_percentage = false
+
+[node name="LogoArea" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -310.0
+offset_top = -190.0
+offset_right = 310.0
+offset_bottom = 220.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="LogoArea"]
+layout_mode = 2
+text = "星图对弈"
+
+[node name="Subtitle" type="Label" parent="LogoArea"]
+layout_mode = 2
+text = "PVP Main Menu"
+
+[node name="ButtonColumn" type="VBoxContainer" parent="LogoArea"]
+layout_mode = 2
+
+[node name="BattleButton" type="Button" parent="LogoArea/ButtonColumn"]
+custom_minimum_size = Vector2(360, 64)
+layout_mode = 2
+text = "开始战斗"
+
+[node name="DeckBuilderButton" type="Button" parent="LogoArea/ButtonColumn"]
+custom_minimum_size = Vector2(360, 64)
+layout_mode = 2
+text = "卡组编辑"
+
+[node name="HeroCodexButton" type="Button" parent="LogoArea/ButtonColumn"]
+custom_minimum_size = Vector2(360, 64)
+layout_mode = 2
+text = "武将图鉴"
+
+[node name="ResultButton" type="Button" parent="LogoArea/ButtonColumn"]
+custom_minimum_size = Vector2(360, 64)
+layout_mode = 2
+text = "战报记录"
+
+[node name="ContinueButton" type="Button" parent="LogoArea/ButtonColumn"]
+visible = false
+custom_minimum_size = Vector2(360, 64)
+layout_mode = 2
+text = "继续游戏"
+
+[node name="VersionLabel" type="Label" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -360.0
+offset_top = -30.0
+offset_right = -22.0
+offset_bottom = -6.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.76, 0.82, 0.92, 0.45)
+text = "Playable Alpha · Star Chart World"
+horizontal_alignment = 2

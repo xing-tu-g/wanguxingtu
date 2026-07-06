@@ -45,8 +45,8 @@ func _check_forward_movement_is_mirrored(failures: Array[String]) -> void:
 	var left_move: Dictionary = MovementSystemScript.move_unit_forward(left_state, left_unit)
 	var right_move: Dictionary = MovementSystemScript.move_unit_forward(right_state, right_unit)
 
-	_expect(_cell_from(left_move.get("to", Vector2i.ZERO)) == Vector2i(6, 3), "left unit moves forward toward higher columns", failures)
-	_expect(_cell_from(right_move.get("to", Vector2i.ZERO)) == Vector2i(5, 3), "right unit moves forward toward lower columns", failures)
+	_expect(_cell_from(left_move.get("to", Vector2i.ZERO)) == Vector2i(4, 3), "left unit moves one cell forward toward higher columns", failures)
+	_expect(_cell_from(right_move.get("to", Vector2i.ZERO)) == Vector2i(7, 3), "right unit moves one cell forward toward lower columns", failures)
 	_expect(_mirror_cell(_cell_from(left_move.get("to", Vector2i.ZERO))) == _cell_from(right_move.get("to", Vector2i.ZERO)), "forward movement endpoints are mirrored", failures)
 	_expect(int(left_move.get("steps", 0)) == int(right_move.get("steps", 0)), "mirrored movement spends equal steps", failures)
 
@@ -94,8 +94,10 @@ func _check_m22_hero_pools_are_consistent(failures: Array[String]) -> void:
 
 
 func _deploy(state, hero_id: String, side: String, column: int, row: int) -> Dictionary:
-	state.set_star_power(side, 10)
-	var result: Dictionary = state.deploy_hero(hero_id, side, column, row)
+	var unit_data: Dictionary = state.build_unit_data(hero_id, state.get_hero_def(hero_id))
+	unit_data["instance_id"] = "%s_%s_%d_%d" % [side, hero_id, column, row]
+	unit_data["entry_order"] = state.next_unit_sequence
+	var result: Dictionary = state.create_unit_instance(unit_data, side, column, row)
 	assert(bool(result.get("ok", false)), "test deployment must succeed")
 	return result.get("unit", {})
 

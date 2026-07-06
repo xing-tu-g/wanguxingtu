@@ -6,9 +6,16 @@ const BattleScreenScene: PackedScene = preload("res://scenes/ui/BattleScreen.tsc
 func _init() -> void:
 	root.content_scale_size = Vector2i(1920, 1080)
 	var failures: Array[String] = []
-	await _check_overlay_is_outside_main_layout(failures)
-	await _check_toggle_shows_and_hides_overlay(failures)
-	await _check_overlay_cards_remain_clickable(failures)
+	var screen: Control = BattleScreenScene.instantiate()
+	root.add_child(screen)
+	await process_frame
+
+	_check_overlay_is_outside_main_layout(screen, failures)
+	await _check_toggle_shows_and_hides_overlay(screen, failures)
+	await _check_overlay_cards_remain_clickable(screen, failures)
+	await process_frame
+
+	screen.queue_free()
 	await process_frame
 
 	if failures.is_empty():
@@ -21,63 +28,57 @@ func _init() -> void:
 	quit(1)
 
 
-func _check_overlay_is_outside_main_layout(failures: Array[String]) -> void:
-	var screen = await _make_screen()
-	var card_zone_panel: PanelContainer = screen.get_node("Margin/Layout/BottomHandBar/CardZonePanel")
-	var battle_area: HBoxContainer = screen.get_node("Margin/Layout/DuelArea/CenterBoardStack/BattleArea")
+func _check_overlay_is_outside_main_layout(screen: Control, failures: Array[String]) -> void:
+	var card_zone_panel: PanelContainer = screen.get_node("BottomHand/CardZonePanel")
+	var battle_area: HBoxContainer = screen.get_node("DuelArea/CenterBoardStack/BattleArea")
 	_expect(screen.card_zone_drawer_panel != null, "card zone overlay exists", failures)
-	_expect(screen.card_zone_drawer_panel.get_parent() == screen, "overlay is rooted outside Margin/Layout flow", failures)
+	_expect(screen.card_zone_drawer_panel.get_parent() == screen, "overlay is rooted outside main layout flow", failures)
 	_expect(screen.card_zone_detail_label.get_parent() != card_zone_panel, "detail label is not in compact panel layout", failures)
 	_expect(screen.card_zone_cards.get_parent() == screen.card_zone_scroll, "card rows stay inside overlay scroll", failures)
-	_expect(card_zone_panel.custom_minimum_size.y <= 64.0, "compact summary panel remains short", failures)
+	_expect(card_zone_panel.custom_minimum_size.y <= 72.0, "compact summary panel remains short", failures)
 	_expect(battle_area.size_flags_vertical == Control.SIZE_EXPAND_FILL, "battle area keeps vertical expand priority", failures)
-	screen.queue_free()
 
 
-func _check_toggle_shows_and_hides_overlay(failures: Array[String]) -> void:
-	var screen = await _make_screen()
+func _check_toggle_shows_and_hides_overlay(screen: Control, failures: Array[String]) -> void:
 	_expect(not screen.card_zone_drawer_panel.visible, "overlay hidden by default", failures)
 	_expect(not screen.card_zone_scroll.visible, "overlay scroll hidden by default", failures)
 	screen._toggle_card_zone()
 	await process_frame
 	_expect(screen.card_zone_drawer_panel.visible, "overlay visible when expanded", failures)
 	_expect(screen.card_zone_scroll.visible, "overlay scroll visible when expanded", failures)
-	_expect(screen.card_zone_toggle_button.text == "收起牌区", "toggle label switches to collapse", failures)
+	_expect(not screen.card_zone_view.collapsed, "card zone view marks expanded state", failures)
 	screen._toggle_card_zone()
-	await process_frame
-	_expect(not screen.card_zone_drawer_panel.visible, "overlay hidden after collapse", failures)
-	_expect(screen.card_zone_toggle_button.text == "展开牌区", "toggle label switches to expand", failures)
-	screen.queue_free()
+	await _wait_for_drawer_close(screen)
+	_expect(not screen.card_zone_drawer_panel.visible, "overlay hidden after collapse animation", failures)
+	_expect(screen.card_zone_view.collapsed, "card zone view marks collapsed state", failures)
 
 
-func _check_overlay_cards_remain_clickable(failures: Array[String]) -> void:
-	var screen = await _make_screen()
+func _check_overlay_cards_remain_clickable(screen: Control, failures: Array[String]) -> void:
 	screen._toggle_card_zone()
 	await process_frame
-	var zhouyu_button := _find_button(screen.card_zone_cards, "周瑜")
-	_expect(zhouyu_button != null, "overlay card list contains zhouyu", failures)
-	if zhouyu_button != null:
-		zhouyu_button.pressed.emit()
+	var first_button := _first_button(screen.card_zone_cards)
+	_expect(first_button != null, "overlay card list contains at least one card button", failures)
+	if first_button != null:
+		first_button.pressed.emit()
 		await process_frame
-		_expect(screen.selected_card_hero_id == "zhouyu", "overlay card click updates selected card", failures)
-		_expect(screen.card_inspect_label.text.find("赤壁灼烧") >= 0, "overlay inspect label updates skill text", failures)
+		_expect(not screen.selected_card_hero_id.is_empty(), "overlay card click updates selected card", failures)
+		_expect(not screen.card_inspect_label.text.is_empty(), "overlay inspect label updates", failures)
 	var first_cell: Button = screen.cell_buttons["1,1"]
-	_expect(first_cell.custom_minimum_size.y >= 88.0, "board cell touch height remains unchanged", failures)
-	screen.queue_free()
+	_expect(first_cell.size.y >= 88.0, "board cell touch height remains usable", failures)
 
 
-func _make_screen():
-	var screen = BattleScreenScene.instantiate()
-	root.add_child(screen)
-	await process_frame
-	return screen
+func _wait_for_drawer_close(screen: Control) -> void:
+	for _index in range(12):
+		await process_frame
+		if not screen.card_zone_drawer_panel.visible:
+			return
 
 
-func _find_button(root_node: Node, text_fragment: String) -> Button:
-	if root_node is Button and str(root_node.text).find(text_fragment) >= 0:
+func _first_button(root_node: Node) -> Button:
+	if root_node is Button:
 		return root_node
 	for child in root_node.get_children():
-		var found := _find_button(child, text_fragment)
+		var found := _first_button(child)
 		if found != null:
 			return found
 	return null
