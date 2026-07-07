@@ -1,75 +1,29 @@
-# 万古星图 Godot 项目规则
+# 万古星图 / 星图对弈 全局规则
 
-## 项目目标
+## 项目定位
 
-- 使用 Godot 4.x + GDScript 开发横屏 2D 自动战棋游戏《万古星图》。
-- 当前阶段目标是开发 MVP：先打通核心战斗闭环，不开发完整商业系统。
-- 关键文档位于 `docs/`，实现必须优先遵循这些文档。
+- 本项目使用 Godot 4.x + GDScript 开发横屏 2D 自动战棋《万古星图 / 星图对弈》。
+- 当前只做 MVP 核心战斗闭环，不做完整商业系统。
+- 当前基线以 `docs/CURRENT.md` 为准；续接时先读 `docs/CURRENT.md`，再读 `docs/HANDOFF.md` 末尾 80-140 行。
+- 禁止整本读取 `docs/HANDOFF.md`。
 
-## 权威文档
+## 权威入口
 
-- `docs/README.md`：文档索引与当前设计决议。
-- `docs/01_rules_spec.md`：核心规则规格书。
-- `docs/02_values_and_content.md`：数值与内容表。
-- `docs/03_godot_mvp_plan.md`：Godot MVP 开发清单与安卓横屏 UI 规范。
-- `docs/04_battle_details_data_tests.md`：战斗细则、数据结构、存档结构与测试清单。
+- `docs/README.md`
+- `docs/01_rules_spec.md`
+- `docs/02_values_and_content.md`
+- `docs/03_godot_mvp_plan.md`
+- `docs/04_battle_details_data_tests.md`
 
-## 当前必须遵守的核心规则
+## 必须遵守
 
-- “弈天师”统一写作“奕星师”。
-- 战斗初始 HP = 奕星师等级生命值。
-- 棋盘为 10 列 × 5 行。
-- 双方靠近己方奕星师的前三列为部署区，中间四列为公共区域。
-- 玩家只能在己方部署区空格部署武将。
-- 单位行动顺序：前方单位先行动，后方单位后行动。
-- 单位先判定攻击；若攻击范围内有敌方单位则直接攻击，否则向前移动后再次判定攻击。
-- 单位只允许向前移动，不允许斜向、横向或后退。
-- 每个格子仅能存在一个单位。
-- MVP 阶段不做绕路；除刺客或穿越技能外，遇到阻挡单位停止移动。
-- 攻击距离统一使用曼哈顿距离。
-- 同一效果不可重复，MVP 阶段临时效果均只持续一回合。
-- 召唤物与普通放置单位规则一致。
-- 战斗结算暂不评选最佳武将，只展示本场战斗统计。
+- 不得随意修改 `BattleManager` 的战斗规则、核心数值、首页、战斗 UI。
+- 当前 manifest 必须保持 100 项同步。
+- `icon_settings_default.png` 和 `icon_settings_hover.png` 继续保持 `needs_art_fix`，不要擅自改成正式可用态。
+- 阶段完成前，必须运行 `scripts/check_test_manifest.ps1` 和 `scripts/run_mvp_manifest_tests.ps1`。
+- 阶段完成后，必须更新 `docs/HANDOFF.md`。
 
-## 开发范围
+## 分层规则
 
-优先实现：
-
-1. Godot 工程初始化与基础页面路由。
-2. 10×5 棋盘、部署区、公共区域显示。
-3. 部署合法性、星力消耗、单位实例生成。
-4. 自动移动、攻击、伤害、死亡、奕星师 HP。
-5. 回合制流程、先后手、星力恢复、星潮。
-6. 本场战斗统计和结算页。
-
-暂不开发：
-
-- 真实抽卡。
-- 充值。
-- 联网排位。
-- 完整背包。
-- 完整 42 武将。
-- 战斗最佳武将评选。
-
-## 数据与代码规范
-
-- 数据来自 `res://data/*.json`，不要把策划数值硬编码在脚本里。
-- 推荐数据文件：`heroes.json`、`skills.json`、`terrains.json`、`strategy_cards.json`、`master_levels.json`。
-- 存档使用 `user://save.json`。
-- GDScript 文件使用清晰命名，不使用单字母变量名。
-- 新增系统应尽量拆到 `scripts/battle/`、`scripts/data/`、`scripts/ui/` 等目录。
-- 实现优先简单、可验证、可扩展，不做过度架构。
-
-## 验证要求
-
-- 每个开发阶段至少能在 Godot 编辑器内运行验证。
-- 战斗规则变更必须对照 `docs/04_battle_details_data_tests.md` 的测试清单。
-- 若无法运行 Godot，应说明阻塞原因并提供可审查的代码/场景结构。
-
-## 长任务交接
-
-- 每完成一个开发或验证阶段，必须更新 `docs/HANDOFF.md`。
-- 交接记录必须包含真实验证命令、结果、产物路径、阻塞项和下一步。
-- 不要把项目状态只保存在聊天上下文中；长会话中断后应能从 `docs/HANDOFF.md` 续接。
-- 为避免 Hermes 长会话 token 膨胀，续接时不要整本读取 `docs/HANDOFF.md`；只读取末尾 80-140 行或按里程碑关键词读取相关小段。
-- 续接优先读取 `docs/CURRENT.md`，再读取 `docs/HANDOFF.md` 末尾 80-140 行或按里程碑关键词读取相关小段；禁止整本读取 `docs/HANDOFF.md`。
+- 目录级约束拆分到各自子目录的 `AGENTS.md`。
+- 子目录规则只补充本目录相关约束，不替代本文件。
